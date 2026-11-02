@@ -290,7 +290,7 @@ const opp=s=>s==="A"?"B":"A";
 const clone=o=>JSON.parse(JSON.stringify(o));
 function newState(seed,decks){
   const s={lp:{A:LP0,B:LP0},hand:{A:[],B:[]},deck:{A:[],B:[]},grave:{A:[],B:[]},defs:{},
-    mon:{A:[null,null,null],B:[null,null,null]},trap:{A:[null,null],B:[null,null]},act:"A",turn:1,summoned:false,over:null};
+    mon:{A:[null,null,null],B:[null,null,null]},trap:{A:[null,null],B:[null,null]},act:(seed>>>3)&1?"B":"A",turn:1,summoned:false,over:null};
   for(const sd of ["A","B"]){
     const order=shuffle(decks[sd].slice(),rng(seed+(sd==="A"?11:29)));
     s.defs[sd]=order;s.deck[sd]=order.map((_,i)=>sd+i);s.hand[sd]=s.deck[sd].splice(0,HAND0);
@@ -430,7 +430,7 @@ function myDeck(){const own=new Set(owned());let d=Array.isArray(save.deck)?[...
 let roomApi=null,named=null,roomReady="wait",peer={n:0,side:null},notice="",cpuTimer=null;
 const draft={code:String(Math.floor(1000+Math.random()*9000)),side:"A"};
 const seed=()=>hashStr(code+"#"+g);
-const NM=sd=>mode==="local"?(sd==="A"?"先攻の人":"後攻の人"):mode==="cpu"?(sd===my?"あなた":"夜の主"):(sd===my?"あなた":"相手");
+const NM=sd=>mode==="local"?(sd==="A"?"東の座の人":"西の座の人"):mode==="cpu"?(sd===my?"あなた":"夜の主"):(sd===my?"あなた":"相手");
 
 function rebuild(silent){
   logLines=[];queue=[];
@@ -438,7 +438,7 @@ function rebuild(silent){
   cur=newState(seed(),decks);applied=0;queue=[];
   for(const a of actions){apply(cur,dec(a));applied++}
   shown=clone(cur);sel=null;
-  if(!silent&&!actions.length)queue.push({k:"turn",side:"A",s:clone(cur)});
+  if(!silent&&!actions.length)queue.push({k:"turn",side:cur.act,s:clone(cur)});
   render(shown);runQueue();
 }
 function ingest(){
@@ -463,7 +463,15 @@ function share(){
   if(mode==="room"&&named)named.presence(st).catch(()=>{});
   if(mode==="peer"&&conn&&conn.open){try{conn.send(JSON.stringify(st))}catch(e){}}
 }
-function onPeers(ch){processPeers(ch.peers.filter(p=>!p.sameTab).map(p=>p.presence||{}))}
+function setSide(sd){if(my===sd)return;const d=decks[my]||myDeck();my=sd;decks={A:null,B:null};decks[my]=d;share()}
+function onPeers(ch){
+  const me=ch.peers.find(p=>p.sameTab);
+  if(!actions.length&&me){
+    const other=ch.peers.find(p=>!p.sameTab&&p.presence&&(p.presence.side==="A"||p.presence.side==="B"));
+    if(other&&other.presence.side===my&&me.peer>other.peer)setSide(opp(my));
+  }
+  processPeers(ch.peers.filter(p=>!p.sameTab).map(p=>p.presence||{}));
+}
 function processPeers(list){
   let n=0,side=null,need=false;
   for(const pr0 of list){
@@ -499,14 +507,16 @@ function pjStart(){
   pj.on("error",e=>{
     const t=e&&e.type;
     if(t==="peer-unavailable")return; // the other phone has not arrived yet
-    if(t==="unavailable-id"){pjStop();mode=null;notice=`部屋「${code}」の${my==="A"?"先攻":"後攻"}は、もう誰かが使っています。番号を変えるか、もう一方の順番を選んでください。`;render();return}
+    if(t==="unavailable-id"){
+      if(my==="A"){pjStop();setSide("B");pjStart();return}
+      pjStop();mode=null;notice=`部屋「${code}」には、もう二人が入っています。別の番号で入ってください。`;render();return}
     netNote="つながりにくい状態です。電波のよい場所で、しばらく待ってください。";if(!animating)render(shown);
   });
   pj.on("disconnected",()=>{try{pj.reconnect()}catch(e){}});
 }
 async function join(){
   code=draft.code.replace(/[^0-9a-z]/gi,"").toLowerCase().slice(0,12);if(!code)return;
-  my=draft.side;g=0;actions=[];decks={A:null,B:null};decks[my]=myDeck();peer={n:0,side:null};notice="";
+  my="A";g=0;actions=[];decks={A:null,B:null};decks[my]=myDeck();peer={n:0,side:null};notice="";
   if(!roomApi){
     if(!window.Peer){notice="オンライン対戦の部品を読み込めませんでした。通信状態を確かめてください。";render();return}
     pjStop();pjStart();rebuild(false);return;
@@ -520,9 +530,9 @@ function showCover(sd){
   c.innerHTML=`<p class="cv-big">スマホを<br><span style="color:var(--gold)">${NM(sd)}</span>に<br>渡してください</p><p class="hint">${NM(opp(sd))}は、画面を見ないでください。<br>手札と伏せた罠が見えてしまいます。</p><button id="cvOpen">${NM(sd)}です。はじめる</button>`;
   c.hidden=false;document.getElementById("cvOpen").addEventListener("click",()=>{c.hidden=true});
 }
-function startLocal(){mode="local";my="A";code=String(Math.random());g=0;actions=[];decks={A:myDeck(),B:myDeck()};rebuild(false);showCover("A")}
+function startLocal(){mode="local";code=String(Math.random());g=0;actions=[];decks={A:myDeck(),B:myDeck()};my=newState(seed(),decks).act;rebuild(false);showCover(my)}
 function startCpu(){mode="cpu";my="A";code=String(Math.random());g=0;actions=[];decks={A:myDeck(),B:BASE.slice()};rebuild(false)}
-function again(){clearTimeout(cpuTimer);if(mode==="local"){my="A";code=String(Math.random());actions=[];rebuild(false);showCover("A");return}if(mode==="cpu")code=String(Math.random());else g++;actions=[];share();rebuild(false)}
+function again(){clearTimeout(cpuTimer);if(mode==="local"){code=String(Math.random());actions=[];my=newState(seed(),decks).act;rebuild(false);showCover(my);return}if(mode==="cpu")code=String(Math.random());else g++;actions=[];share();rebuild(false)}
 function toLobby(){clearTimeout(cpuTimer);queue=[];pjStop();if(named){named.leave().catch(()=>{});named=null}mode=null;screen=null;render()}
 
 /* ================= render ================= */
@@ -678,12 +688,12 @@ function peerLine(){
   const q=`<button id="quit" class="ghost" style="padding:6px 12px;font-size:12px;flex:0 0 auto">やめる</button>`;
   if(mode!=="room"&&mode!=="peer")return `<div class="row" style="justify-content:flex-end">${q}</div>`;
   if(mode==="peer"&&netNote&&peer.n===0)return `<div class="row"><p class="peer bad">${esc(netNote)}</p>${q}</div>`;
-  const p=peer,t=p.n===0?`<p class="peer bad">部屋「${esc(code)}」にいるのはあなただけです。もう一台で同じ番号を入れてください。</p>`:p.side===my?`<p class="peer bad">相手も同じ順番を選んでいます。どちらかが入り直してください。</p>`:`<p class="peer ok">部屋「${esc(code)}」で相手とつながっています</p>`;
+  const p=peer,t=p.n===0?`<p class="peer bad">部屋「${esc(code)}」にいるのはあなただけです。もう一台で同じ番号を入れてください。</p>`:p.side===my?`<p class="peer">順番を決めています…</p>`:`<p class="peer ok">部屋「${esc(code)}」で相手とつながっています</p>`;
   return `<div class="row">${t}${q}</div>`;
 }
 function lobby(){
   const canOnline=roomReady==="ok"||(roomReady==="no"&&!!window.Peer);
-  const note=roomReady==="wait"?"オンラインの準備をしています…":roomReady==="ok"?"二人とも claude.ai にサインインし、このページに招待されている必要があります。":window.Peer?"アカウントはいりません。二人で同じ番号を入れ、ひとりは先攻、ひとりは後攻を選んでください。":"この画面ではオンライン対戦ができません。";
+  const note=roomReady==="wait"?"オンラインの準備をしています…":roomReady==="ok"?"二人とも claude.ai にサインインし、このページに招待されている必要があります。":window.Peer?"アカウントはいりません。二人で同じ番号を入れるだけです。":"この画面ではオンライン対戦ができません。";
   app.innerHTML=`<div style="display:flex;flex-direction:column;gap:14px">
     <div class="panel"><h2>あなたのデッキ</h2><p class="hint">デッキは、対戦で使うカードの束です。持っているカードから ${DMIN}〜${DMAX} 枚をえらんで組みます。</p>
       <div class="row" style="font-size:14px"><span>デッキ <b class="count">${myDeck().length}</b> 枚</span><span class="meta">持っているカード ${owned().length} / ${CARDS.length}</span></div>
@@ -695,7 +705,7 @@ function lobby(){
     <div class="panel"><h2>コンピュータと戦う</h2><p class="hint">説明書はいりません。画面の上の案内どおりにタップしていけば遊べます。</p><button id="cpu">はじめる</button></div>
     <div class="panel"><h2>オンラインで対戦する</h2>
       <div><label for="code">部屋の番号（二人で同じものを入れる）</label><input type="text" id="code" inputmode="numeric" maxlength="12" value="${esc(draft.code)}"></div>
-      <div class="sides"><button type="button" class="side" data-s="A" aria-pressed="${draft.side==="A"}">先攻<small>先に動く</small></button><button type="button" class="side" data-s="B" aria-pressed="${draft.side==="B"}">後攻<small>あとに動く</small></button></div>
+      <p class="hint" style="color:var(--ink)">番号を入れて「部屋に入る」を押すだけ。先攻・後攻は自動でランダムに決まります。</p>
       <button id="join" ${canOnline?"":"disabled"}>部屋に入る</button>
       <p class="hint">${note}</p>${notice?`<p class="hint" style="color:var(--bad)">${esc(notice)}</p>`:""}
     </div>
@@ -708,7 +718,7 @@ function lobby(){
         <li>★の作品は、自分の場のいちばん弱い作品と入れかわりで出る（生け贄）。</li>
         <li>罠は伏せておくだけ。条件がそろうと自動で発動する。いつ発動するかは、伏せた罠の下の紫のラベルに書いてある。</li>
         <li>相性：水は炎に、炎は風に、風は水に強い。有利なら戦いのときだけ攻撃力 +500。</li>
-        <li>先攻の最初のターンは攻撃できない。ターンのはじめに 1 枚引く。</li>
+        <li>先攻・後攻はランダムで決まる。最初のターンは攻撃できない。ターンのはじめに 1 枚引く。</li>
       </ol></details>
   </div>`;
   document.getElementById("cpu").addEventListener("click",startCpu);
@@ -716,7 +726,7 @@ function lobby(){
   document.getElementById("toDeck").addEventListener("click",()=>{draftDeck=myDeck();peek=null;screen="deck";render()});
   document.getElementById("toQuiz").addEventListener("click",()=>{quizState=null;screen="quiz";render()});
   document.getElementById("code").addEventListener("input",e=>draft.code=e.target.value);
-  app.querySelectorAll(".side").forEach(b=>b.addEventListener("click",()=>{draft.side=b.dataset.s;lobby()}));
+
   document.getElementById("join").addEventListener("click",join);
 }
 
