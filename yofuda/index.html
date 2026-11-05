@@ -296,7 +296,7 @@ const BASE_N=26, DMIN=20, DMAX=30;
 const REWARDS=[...Array(20).keys()].map(i=>26+i), PER=2;
 const POOL=()=>CARDS.map((c,i)=>i).filter(i=>CARDS[i].rare); // レアカードすべて
 function pickRare(tiers,own){const w={R:6,SR:3,UR:1};const left=POOL().filter(i=>tiers.includes(CARDS[i].rare)&&!own.has(i));if(!left.length)return null;let t=left.reduce((a,i)=>a+w[CARDS[i].rare],0)*Math.random();for(const i of left){t-=w[CARDS[i].rare];if(t<=0)return i}return left[left.length-1]}
-const WINS=[...[...Array(14).keys()].map(i=>46+i),67,68,69,72], FREE=[60,61,62,63,64,65,66,70,71], SHIELDS=5;
+const WINS=[...[...Array(14).keys()].map(i=>46+i),67,68,69,72], FREE=[60,61,62,63,64,65,66,70,71], SHIELDS=5, ST_IN_SHIELD=2;
 /* 夜の主の強さ：デッキ（札の強さ）が変わる。勝つと、その強さに応じたレアカード */
 const LV=[
  {n:"やさしい",d:"弱めの作品と、基本の言葉・罠だけ",r:null},
@@ -315,6 +315,9 @@ function cpuDeck(lv){
   const stars=mons.filter(i=>CARDS[i].star).slice(0,lv===2?3:5),plain=mons.filter(i=>!CARDS[i].star).slice(0,lv===2?13:8);
   const d=[...stars,...plain,...oth.slice(0,30-stars.length-plain.length)];
   if(lv===3){const top=mons.filter(i=>!CARDS[i].star).slice(0,4);top.forEach((x,k)=>d[d.length-1-k]=x)} // 最強：強い作品を 2 枚ずつ
+  // S・トリガーの札を 4 枚は入れる（盾から出るように）
+  const sts=pool.filter(i=>CARDS[i].st&&!d.includes(i)).sort((a,b)=>pw(b)-pw(a));let k=d.filter(i=>CARDS[i].st).length,pos=d.length-1-(lv===3?4:0);
+  while(k<4&&sts.length&&pos>=0){if(CARDS[d[pos]].t!=="m"&&!CARDS[d[pos]].st){d[pos]=sts.shift();k++}pos--}
   return d;
 }
 const ABIL=c=>[c.on?["出たとき",c.od]:null,c.pay?["歩合","攻撃で相手の命を減らすか盾を割ったら、1 枚引く"]:null,c.joke?["笑い","戦いで負けて命が減るときは、かわりに同じだけ命がふえる"]:null,c.slay?["天敵",`「${c.slay}」との戦いでは必ず勝つ`]:null,c.st?["S・トリガー","盾から手札に来たとき、ただで発動する"]:null,c.double?["連撃","1 ターンに 2 回攻撃できる"]:null,c.pierce?["貫通","相手の罠が効かない（出したときも、攻撃したときも）"]:null,c.blast?["開幕",`場に出たとき、相手の命を ${c.blast} 減らす`]:null].filter(Boolean);
@@ -394,7 +397,11 @@ function newState(seed,decks){
     mon:{A:[null,null,null],B:[null,null,null]},trap:{A:[null,null],B:[null,null]},act:(seed>>>3)&1?"B":"A",turn:1,summoned:false,over:null,seed,bet:{A:false,B:false},shield:{A:[],B:[]}};
   for(const sd of ["A","B"]){
     const order=shuffle(decks[sd].slice(),rng(seed+(sd==="A"?11:29)));
-    s.defs[sd]=order;s.deck[sd]=order.map((_,i)=>sd+i);s.hand[sd]=s.deck[sd].splice(0,HAND0);s.shield[sd]=s.deck[sd].splice(0,SHIELDS);
+    s.defs[sd]=order;s.deck[sd]=order.map((_,i)=>sd+i);s.hand[sd]=s.deck[sd].splice(0,HAND0);
+    /* 盾は 5 枚。S・トリガーが 1 試合に 2 回くらい出るように、S の札を 2 枚まぜてから切る */
+    const sh=[];for(let k=0;k<s.deck[sd].length&&sh.length<ST_IN_SHIELD;k++)if(CARDS[s.defs[sd][+s.deck[sd][k].slice(1)]].st)sh.push(s.deck[sd].splice(k--,1)[0]);
+    while(sh.length<SHIELDS&&s.deck[sd].length)sh.push(s.deck[sd].shift());
+    s.shield[sd]=shuffle(sh,rng(seed+(sd==="A"?101:203)));
   }
   return s;
 }
