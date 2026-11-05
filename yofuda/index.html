@@ -290,7 +290,7 @@ const opp=s=>s==="A"?"B":"A";
 const clone=o=>JSON.parse(JSON.stringify(o));
 function newState(seed,decks){
   const s={lp:{A:LP0,B:LP0},hand:{A:[],B:[]},deck:{A:[],B:[]},grave:{A:[],B:[]},defs:{},
-    mon:{A:[null,null,null],B:[null,null,null]},trap:{A:[null,null],B:[null,null]},act:(seed>>>3)&1?"B":"A",turn:1,summoned:false,over:null};
+    mon:{A:[null,null,null],B:[null,null,null]},trap:{A:[null,null],B:[null,null]},act:(seed>>>3)&1?"B":"A",turn:1,summoned:false,over:null,seed,bet:{A:false,B:false}};
   for(const sd of ["A","B"]){
     const order=shuffle(decks[sd].slice(),rng(seed+(sd==="A"?11:29)));
     s.defs[sd]=order;s.deck[sd]=order.map((_,i)=>sd+i);s.hand[sd]=s.deck[sd].splice(0,HAND0);
@@ -301,6 +301,9 @@ const card=(s,id)=>CARDS[s.defs[id[0]][+id.slice(1)]];
 const strongest=(s,sd)=>{let b=-1;s.mon[sd].forEach((m,i)=>{if(m&&(b<0||m.atk>s.mon[sd][b].atk))b=i});return b};
 const weakest=(s,sd)=>{let b=-1;s.mon[sd].forEach((m,i)=>{if(m&&(b<0||m.atk<s.mon[sd][b].atk))b=i});return b};
 const hasMon=(s,sd)=>s.mon[sd].some(Boolean);
+/* 一発逆転の賭け：命 2000 以下で、相手と 3000 以上の差があるときだけ。1 試合 1 回。 */
+const BET_LP=2000,BET_GAP=3000;
+const canBet=(s,sd)=>!s.over&&!(s.bet&&s.bet[sd])&&s.lp[sd]<=BET_LP&&s.lp[opp(sd)]-s.lp[sd]>=BET_GAP;
 function eff(s,attSide,ai,defSide,di){
   const a=s.mon[attSide][ai],d=s.mon[defSide][di],ca=card(s,a.id),cd=card(s,d.id);
   return [a.atk+(BEATS[ca.a]===cd.a?500:0),d.atk+(BEATS[cd.a]===ca.a?500:0)];
@@ -326,6 +329,7 @@ function why(s,sd,a){
     if(y===-1)return hasMon(s,opp(sd))?"相手の場に作品がいるので、直接攻撃はできません。":"";
     return s.mon[opp(sd)][y]?"":"そこに相手の作品がいません。";
   }
+  if(t==="G"){if(s.bet&&s.bet[sd])return "賭けは 1 試合に 1 回だけです。";if(s.lp[sd]>BET_LP)return `命が ${BET_LP} 以下のときだけ賭けられます。`;if(s.lp[opp(sd)]-s.lp[sd]<BET_GAP)return `相手との命の差が ${BET_GAP} 以上のときだけ賭けられます。`;return ""}
   if(t==="E"||t==="F")return "";
   return "できません。";
 }
@@ -374,6 +378,12 @@ function apply(s,a){
     if(ea>ed){kill(o,y);if(rev(o))return ev;dmg(o,ea-ed)}
     else if(ea<ed){kill(me,x);if(rev(me))return ev;dmg(me,ed-ea)}
     else{kill(o,y);kill(me,x);if(rev(o))return ev;rev(me)}
+  }else if(t==="G"){
+    if(!s.bet)s.bet={A:false,B:false};s.bet[me]=true;
+    const win=rng(hashStr((s.seed||0)+"|bet|"+s.turn+"|"+me+"|"+s.lp.A+"|"+s.lp.B))()<0.5;
+    E("gamble",{ok:win});
+    if(win){const a=s.lp[me];s.lp[me]=s.lp[o];s.lp[o]=a;E("swap",{a:s.lp[me],b:s.lp[o]})}
+    else dmg(me,s.lp[me]);
   }else if(t==="F"){
     s.over=o;s.surr=me;E("surrender");E("over",{win:o});
   }else if(t==="E"){
@@ -388,6 +398,7 @@ function apply(s,a){
 /* computer opponent */
 function ai(s,me){
   const o=opp(me),H=s.hand[me],ok=a=>!why(s,me,a);
+  if(ok(["G"])&&!hasMon(s,me))return ["G"];
   const find=e=>H.find(id=>card(s,id).e===e);
   let id;
   if((id=find("draw")))return ["P",id];
@@ -560,6 +571,7 @@ function guide(s){
   if(sel&&sel.kind==="hand"&&s.hand[my].includes(sel.id)&&card(s,sel.id).t==="t"&&!why(s,my,["T",sel.id]))return {n:"!",t:"紫に光る「ここ」の枠をタップすると、罠が伏せられます"};
   if(sel&&sel.kind==="hand")return {n:"?",t:"説明を読んで、下のボタンを押そう"};
   const atk=attackers(s),pl=playable(s);
+  if(canBet(s,my)&&!sel&&!pl.length&&!atk.length)return {n:"賭",t:"追いつめられています。下の「一発逆転の賭け」が使えます"};
   if(!s.summoned&&pl.some(id=>card(s,id).t==="m"))return {n:"1",t:"光っている作品の札をタップして、場に出そう"};
   const tp=pl.find(id=>card(s,id).t==="t");
   if(tp)return {n:"罠",t:"紫に光る罠の札をタップして伏せておこう。相手が動いたとき自動で発動する"};
@@ -630,7 +642,7 @@ function render(s){
   const on=(id,f)=>{const b=document.getElementById(id);if(b)b.addEventListener("click",f)};
   on("doS",()=>act(["S",sel.id]));on("doP",()=>act(["P",sel.id]));on("doT",()=>act(["T",sel.id]));
   on("doDirect",()=>act(["A",sel.slot,-1]));on("doCancel",()=>{sel=null;render(shown)});
-  on("doEnd",()=>act(["E"]));on("doSurr",()=>{sel={kind:"surr"};render(shown)});on("doSurrYes",()=>act(["F"]));on("again",again);on("lobby",toLobby);on("quit",toLobby);
+  on("doEnd",()=>act(["E"]));on("doSurr",()=>{sel={kind:"surr"};render(shown)});on("doSurrYes",()=>act(["F"]));on("doBet",()=>{sel={kind:"bet"};render(shown)});on("doBetYes",()=>act(["G"]));on("again",again);on("lobby",toLobby);on("quit",toLobby);
 }
 function onTap(d){
   if(animating||queue.length)return;
@@ -674,6 +686,10 @@ function actionPanel(s,live,idle){
     const c=card(s,s.trap[my][sel.slot]);body=`<div class="sheet">${cardHtml(c)}<div class="tx"><b>${esc(c.n)}</b><span>あなたの伏せ札。${esc(c.d)}<br>条件がそろうと自動で発動します。</span></div></div>`;
   }else if(sel&&sel.kind==="foetrap"){
     body=`<p style="margin:0">相手が伏せた罠です。中身はわかりません。</p><p class="hint" style="margin:0">こんなときに発動するかもしれません：<br>・あなたが攻撃力 1500 以上の作品を出したとき<br>・あなたが攻撃したとき（攻撃が止められる／攻撃した作品が倒される）<br>・相手の作品を戦いで倒したとき<br>・あなたが言葉の札を使ったとき<br>罠は 1 回使うとなくなります。弱い作品で先に攻撃して、罠を使わせるのも作戦です。</p>`;
+  }else if(sel&&sel.kind==="bet"&&live&&canBet(s,my)){
+    body=`<p style="margin:0"><b>一発逆転の賭け</b>（1 試合に 1 回だけ）</p><p style="margin:0">表か裏か、確率は半々。<br>表：あなたと相手の命が入れかわる（あなた ${s.lp[my]} → ${s.lp[opp(my)]}）。<br>裏：その場であなたの負け。</p><p class="hint" style="margin:0">取り消せません。</p>`;
+    btns=`<div class="row"><button id="doBetYes" class="danger">賭ける</button><button id="doCancel" class="ghost">やめる</button></div>`;
+    return `<div class="panel">${body}${btns}</div>`;
   }else if(sel&&sel.kind==="surr"&&live){
     body=`<p style="margin:0">本当に降参しますか？</p><p class="hint" style="margin:0">降参すると、その場であなたの負けになります。取り消せません。</p>`;
     btns=`<div class="row"><button id="doSurrYes" class="danger">降参する</button><button id="doCancel" class="ghost">やめる</button></div>`;
@@ -681,6 +697,7 @@ function actionPanel(s,live,idle){
   }else if(live){
     body=`<p class="hint">札や作品をタップすると、説明とできることが出ます。</p>`;
   }
+  if(live&&canBet(s,my))btns+=`<div class="row"><button id="doBet" style="background:var(--trap);color:#fff">一発逆転の賭け（1 回だけ）</button></div>`;
   if(live)btns+=`<div class="row"><button id="doEnd" class="${playable(s).length||attackers(s).length?"ghost":""}">ターン終了</button></div><div class="row" style="justify-content:flex-end"><button id="doSurr" class="ghost" style="padding:6px 12px;font-size:12px;flex:0 0 auto">降参する</button></div>`;
   if(!body&&!btns)return "";
   return `<div class="panel">${body}${btns}</div>`;
@@ -724,6 +741,7 @@ function lobby(){
         <li>★の作品は、自分の場のいちばん弱い作品と入れかわりで出る（生け贄）。</li>
         <li>罠は伏せておくだけ。条件がそろうと自動で発動する。いつ発動するかは、伏せた罠の下の紫のラベルに書いてある。</li>
         <li>相性：水は炎に、炎は風に、風は水に強い。有利なら戦いのときだけ攻撃力 +500。</li>
+        <li>一発逆転の賭け：自分の命が 2000 以下で、相手と 3000 以上の差があるときだけ、1 試合に 1 回使える。確率は半々で、表なら命が入れかわり、裏ならその場で負け。</li>
         <li>降参（サレンダー）：自分のターンなら、いつでも「降参する」を押して負けを認められる。</li>
         <li>先攻・後攻はランダムで決まる。最初のターンは攻撃できない。ターンのはじめに 1 枚引く。</li>
       </ol></details>
@@ -889,6 +907,8 @@ function evText(ev,prev){
     case "buffall":return {t:`${X}の場の作品すべての攻撃力が ${ev.amt||300} 上がった`};
     case "draw":return ev.why==="direct"?{t:`${NM(ev.side)}はダイレクトアタックを受けたので 1 枚引いた`}:null;
     case "surrender":return {t:`${X}が降参した`,c:"d"};
+    case "gamble":return {t:`${X}が一発逆転の賭けに出た → ${ev.ok?"成功！":"失敗…"}`,c:"tr"};
+    case "swap":return {t:`命が入れかわった（${NM(ev.side)} ${ev.a} ／ ${NM(opp(ev.side))} ${ev.b}）`,c:"h"};
     case "over":return {t:ev.win==="draw"?"引き分け":`${NM(ev.win)}の勝ち`,c:"h"};
   }
   return null;
@@ -938,6 +958,12 @@ async function fx(ev){
     case "damage":{render(s);const el=LPel(sd);countLP(sd,prev.lp[sd],s.lp[sd]);float(el,"-"+ev.amt,"--bad",ev.amt>=2000?56:44);
       if(el){const p=ctr(el);burst(p.x,p.y,css("--bad"),Math.min(90,20+ev.amt/40),8)}
       shake(Math.min(20,4+ev.amt/150));if(sd===my)flash(css("--bad"),Math.min(.5,.15+ev.amt/8000));await sleep(800);break}
+    case "gamble":{render(prev);flash(COL("trap"),.45);shake(10);
+      await banner(`${NM(sd)}が一発逆転の賭け`,"表なら命が入れかわる。裏なら負け。","--trap",1200);
+      await banner("…","","--mute",700);
+      if(ev.ok){for(let i=0;i<4;i++)setTimeout(()=>burst(innerWidth/2+(Math.random()-.5)*200,innerHeight*.4,COL(["gold","trap","fire","wind"][i]),70,10),i*150);shake(18);flash(css("--gold"),.5)}
+      await banner(ev.ok?"表！ 賭けに勝った":"裏… 賭けに負けた",ev.ok?"命が入れかわる":"",ev.ok?"--gold":"--bad",1100);break}
+    case "swap":{render(s);countLP("A",prev.lp.A,s.lp.A);countLP("B",prev.lp.B,s.lp.B);for(const x of ["A","B"]){const el=LPel(x);if(el){const p=ctr(el);ring(p.x,p.y,css("--gold"),8,8)}}await sleep(900);break}
     case "surrender":{render(s);flash(css("--mute"),.3);await banner(`${NM(sd)}が降参`,"勝負はここまで","--mute",900);break}
     case "over":{render(s);
       if(ev.win===my){for(let i=0;i<5;i++)setTimeout(()=>burst(innerWidth/2+(Math.random()-.5)*220,innerHeight*.4+(Math.random()-.5)*140,COL(["fire","water","wind","gold","trap"][i]),70,10),i*170)}
