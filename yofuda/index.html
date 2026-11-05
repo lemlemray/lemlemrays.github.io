@@ -67,7 +67,9 @@ button:focus-visible,.zone:focus-visible,input:focus-visible{outline:2px solid v
 .card.fire{--c:var(--fire)} .card.water{--c:var(--water)} .card.wind{--c:var(--wind)}
 .card.spell{--c:var(--gold);background:#E8E0C8} .card.trap{--c:var(--trap);background:#E9DCE3}
 .card .nm{font-size:calc(var(--cw)*.115);font-weight:800;line-height:1.2;min-height:2.4em;display:flex;align-items:center}
-.card .gl{font-size:calc(var(--cw)*.42);line-height:1;font-weight:800;color:var(--c);flex:1;display:flex;align-items:center}
+.shs{display:inline-flex;gap:2px;align-items:center}.shs i{width:9px;height:12px;border-radius:2px 2px 5px 5px;background:var(--water);box-shadow:inset 0 0 0 1px #fff6;display:block}.shs em{font-style:normal;font-size:11px;color:var(--bad)}
+.lvrow{display:flex;gap:6px}.lvrow .lv{flex:1;padding:8px 2px;font-size:13px;background:transparent;color:var(--ink);border:1px solid var(--rim)}.lvrow .lv.on{background:var(--gold);color:var(--sumi);border-color:var(--gold);font-weight:800}
+.card .art{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}.card .art svg{width:100%;height:100%;overflow:visible}
 .card .ft{display:flex;justify-content:space-between;align-items:center;width:100%;font-family:var(--f-body);font-size:calc(var(--cw)*.12);font-weight:700;font-variant-numeric:tabular-nums}
 .card .at{background:var(--c);color:#fff;border-radius:3px;padding:0 4px}
 .card .st{position:absolute;top:-7px;right:-5px;background:var(--sumi);color:var(--gold);border:1px solid var(--gold);border-radius:999px;font-size:10px;padding:0 5px;font-family:var(--f-body)}
@@ -160,63 +162,117 @@ details summary{cursor:pointer;font-size:14px;font-family:var(--f-card)}
 <script>
 (()=>{
 /* ================= cards ================= */
-const ATTR={fire:"炎",water:"水",wind:"風"};
+const ATTR={fire:"炎",water:"水",wind:"草"};
 const BEATS={water:"fire",fire:"wind",wind:"water"};
 const CARDS=[
- {n:"電柱の詩路",g:"詩",t:"m",a:"fire",atk:1000,f:"街の電柱に、手書きの詩をかかげる企画。"},
- {n:"大蛙美術館",g:"蛙",t:"m",a:"fire",atk:1300,f:"樹冠ごとに作家を分けて展示する、バーチャル美術館。"},
- {n:"膿む映画館",g:"膿",t:"m",a:"fire",atk:1600,f:"句集「キャラメルポップコーンは膿む」から設計した建築。"},
- {n:"コロッセオの塔",g:"闘",t:"m",a:"fire",atk:2300,star:1,f:"コロッセオを大枠にしたスタジアムの上に、自作スケッチの塔を建てる。"},
- {n:"少し外に出られる家",g:"外",t:"m",a:"water",atk:1000,f:"どこからでも「少し」外に出られる平屋。"},
- {n:"二つの器の家",g:"器",t:"m",a:"water",atk:1200,f:"二つの器が重なり合う、淡い色の住宅。"},
- {n:"10の暮らし",g:"十",t:"m",a:"water",atk:1500,f:"「10の暮らし、10のレベル」。世帯ごとに色を分けた集合住宅。"},
- {n:"水冠の塔",g:"灯",t:"m",a:"water",atk:1700,f:"「水冠の塔と灯守の家」。自作スケッチから生まれた塔。"},
- {n:"幾何学的滝行建築",g:"滝",t:"m",a:"water",atk:2400,star:1,f:"滝行の姿を幾何学に抽象化した瞑想施設。"},
- {n:"素御",g:"素",t:"m",a:"wind",atk:1100,f:"自分で作り、運用している対話型の Web アプリ。"},
- {n:"斜めの家",g:"斜",t:"m",a:"wind",atk:1300,f:"車椅子でも過ごせる、段々畑の平屋。"},
- {n:"森の情景",g:"森",t:"m",a:"wind",atk:1600,f:"秋葉原の建築計画「アキバ・クリエイティブ・パーク」。"},
- {n:"ボロメオの寝所",g:"環",t:"m",a:"wind",atk:2200,star:1,f:"自由率俳句 13 句を精神分析で読み解いて設計した建築。"},
- {n:"二条城 本丸",g:"城",t:"m",a:"wind",atk:2800,star:1,f:"かつて現場監督として立った、本丸の現場。"},
- {n:"自由率俳句",g:"句",t:"s",e:"arrow",d:"相手の命を 800 減らす。",f:"自分が考案した俳句の形式。"},
- {n:"祈りの手",g:"祈",t:"s",e:"heal",d:"自分の命を 1000 ふやす。",f:"自分の手の形「祈り」をアイコンにした建築から。"},
- {n:"豆腐の角",g:"豆",t:"s",e:"bolt",d:"相手の場でいちばん強い作品を倒す。",f:"小説「恋路を邪魔する奴は豆腐の角に頭をぶつけて死ねないでいろ」から。"},
- {n:"AIは筆",g:"筆",t:"s",e:"buff",d:"自分の場でいちばん強い作品の攻撃力を +500（ずっと）。",f:"創作の信条。AI は道具であり、筆である。"},
- {n:"志向縁占い",g:"占",t:"s",e:"draw",d:"山札から 2 枚引く。",f:"志向縁の考え方をもとにした占い。"},
- {n:"城の図面",g:"図",t:"t",e:"pit",d:"相手が攻撃力 1500 以上の作品を出したら、その作品を倒す。",f:"自作小説「城の図面」。図面はすべてを見抜く。"},
- {n:"ネットリテラシー",g:"網",t:"t",e:"mirror",d:"相手の作品が攻撃してきたら、その作品を倒す。",f:"詩「ネットリテラシー」から。"},
- {n:"一本の傘",g:"傘",t:"t",e:"guard",d:"相手の作品が攻撃してきたら、その攻撃を止める（だれも倒れない）。",f:"委託された映画脚本の傘から。"},
- {n:"ふたつの窓",g:"窓",t:"t",e:"guard",d:"相手の作品が攻撃してきたら、その攻撃を止める（だれも倒れない）。",f:"同じ言葉を、違う窓から見るゲーム。"},
- {n:"干された町",g:"干",t:"t",e:"revenge",d:"自分の作品が戦いで倒されたら、相手の命を 1000 減らす。",f:"町を歩いて撮った写真の動画から。"},
- {n:"ワケル",g:"分",t:"t",e:"counter",d:"相手が言葉の札を使ったら、それを打ち消す（効かなくなる）。",f:"自作の文字起こしアプリ。言葉を聞き分ける。"},
- {n:"街の幾何学",g:"街",t:"t",e:"mirror",d:"相手の作品が攻撃してきたら、その作品を倒す。",f:"概念象形アートの作品。"},
- // ---- cards earned by answering questions (index 26-45), stronger the more you solve ----
+ // ---- はじめから持っている札（0-25）。効果は、それぞれの経験から ----
+ {n:"電柱の詩路",g:"詩",t:"m",a:"fire",atk:1000,on:"arrow",ov:300,od:"相手の命を 300 減らす",f:"街の電柱に、手書きの詩をかかげる企画。道ゆく人の胸に、ちくりと刺さる。"},
+ {n:"大蛙美術館",g:"蛙",t:"m",a:"fire",atk:1300,on:"draw",ov:1,od:"山札から 1 枚引く",f:"樹冠ごとに作家を分けて展示する、バーチャル美術館。開くたびに新しい作家を招く。"},
+ {n:"膿む映画館",g:"膿",t:"m",a:"fire",atk:1600,on:"weaken",ov:200,od:"相手の場の作品すべての攻撃力を -200",f:"句集「キャラメルポップコーンは膿む」から設計した建築。甘いものは、まわりから膿ませていく。"},
+ {n:"コロッセオの塔",g:"闘",t:"m",a:"fire",atk:2300,star:1,on:"snipe",od:"相手の場でいちばん弱い作品を倒す",f:"コロッセオを大枠にしたスタジアムの上に、自作スケッチの塔を建てる。闘技場は、弱いものから脱落する。"},
+ {n:"少し外に出られる家",g:"外",t:"m",a:"water",atk:1000,on:"heal",ov:500,od:"自分の命を 500 ふやす",f:"どこからでも「少し」外に出られる平屋。少し外の空気を吸うだけで、命が戻る。"},
+ {n:"二つの器の家",g:"器",t:"m",a:"water",atk:1200,on:"heal",ov:700,od:"自分の命を 700 ふやす",f:"二つの器が重なり合う、淡い色の住宅。器は、満たすためにある。"},
+ {n:"10の暮らし",g:"十",t:"m",a:"water",atk:1500,on:"buffall",ov:200,od:"自分の場の作品すべての攻撃力を +200",f:"「10の暮らし、10のレベル」。世帯ごとに色を分けた集合住宅。暮らしは、となり合って支え合う。"},
+ {n:"水冠の塔",g:"灯",t:"m",a:"water",atk:1700,on:"expose",od:"相手が伏せている罠をすべて壊す",f:"「水冠の塔と灯守の家」。灯守の灯りが、伏せられたものを照らし出す。"},
+ {n:"幾何学的滝行建築",g:"滝",t:"m",a:"water",atk:2400,star:1,on:"heal",ov:1000,od:"自分の命を 1000 ふやす",f:"滝行の姿を幾何学に抽象化した瞑想施設。滝に打たれて、身を清める。"},
+ {n:"素御",g:"素",t:"m",a:"wind",atk:1100,on:"draw",ov:1,od:"山札から 1 枚引く",slay:"島津耕造",f:"自分で作り、運用している対話型の Web アプリ。つくった本人の考えを知りつくしているので、島津耕造にだけは負けない。"},
+ {n:"斜めの家",g:"斜",t:"m",a:"wind",atk:1300,on:"heal",ov:600,od:"自分の命を 600 ふやす",f:"車椅子でも過ごせる、段々畑の平屋。行き道と帰り道をめぐるうちに、からだが休まる。"},
+ {n:"森の情景",g:"森",t:"m",a:"wind",atk:1600,on:"buffall",ov:200,od:"自分の場の作品すべての攻撃力を +200",f:"秋葉原の建築計画「アキバ・クリエイティブ・パーク」。つくり手の集まる森が、みんなを育てる。"},
+ {n:"ボロメオの寝所",g:"環",t:"m",a:"wind",atk:2200,star:1,on:"weaken",ov:300,od:"相手の場の作品すべての攻撃力を -300",f:"自由率俳句 13 句を精神分析で読み解いて設計した建築。無意識の結び目をほどかれると、だれもが弱くなる。"},
+ {n:"二条城 本丸",g:"城",t:"m",a:"wind",atk:2800,star:1,on:"buffall",ov:300,od:"自分の場の作品すべての攻撃力を +300",f:"かつて現場監督として立った、本丸の現場。監督がいると、現場がしまる。"},
+ {n:"自由率俳句",g:"句",t:"s",e:"arrow",d:"相手の命を 800 減らす。",f:"自分が考案した俳句の形式。短い言葉ほど、深く刺さる。"},
+ {n:"祈りの手",st:1,g:"祈",t:"s",e:"heal",d:"自分の命を 1000 ふやす。",f:"自分の手の形「祈り」をアイコンにした建築から。祈ると、命が満ちる。"},
+ {n:"豆腐の角",st:1,g:"豆",t:"s",e:"halve",d:"相手の場でいちばん強い作品の攻撃力を半分にする。",f:"小説「恋路を邪魔する奴は豆腐の角に頭をぶつけて死ねないでいろ」。豆腐の角では倒れない。でも、だいぶ効く。"},
+ {n:"AIは筆",g:"筆",t:"s",e:"buff",d:"自分の場でいちばん強い作品の攻撃力を +500（ずっと）。",f:"創作の信条。AI は便利な道具ではなく、絵描きにとっての筆である。"},
+ {n:"志向縁占い",st:1,g:"占",t:"s",e:"draw",d:"山札から 2 枚引く。",f:"志向縁の考え方をもとにした占い。占うと、次の縁が手に入る。"},
+ {n:"城の図面",g:"図",t:"t",e:"pit",d:"相手が攻撃力 1500 以上の作品を出したら、その作品を倒す。",f:"自作小説「城の図面」。図面を読めば、大きな建物の弱いところが分かる。"},
+ {n:"ネットリテラシー",st:1,g:"網",t:"t",e:"mirror",d:"相手の作品が攻撃してきたら、その作品を倒す。",f:"詩「ネットリテラシー」から。攻撃してきた言葉は、そのまま本人に返る。"},
+ {n:"一本の傘",st:1,g:"傘",t:"t",e:"guard",d:"相手の作品が攻撃してきたら、その攻撃を止める（だれも倒れない）。",f:"委託された映画脚本の、一本の傘。降ってくるものから、そっと守る。"},
+ {n:"ふたつの窓",g:"窓",t:"t",e:"guarddraw",d:"相手の作品が攻撃してきたら、その攻撃を止めて、山札から 1 枚引く。",f:"同じ言葉を、ふたりがちがう窓から見る言葉当てゲーム。止まった攻撃の向こうに、ヒントが見える。"},
+ {n:"干された町",g:"干",t:"t",e:"revenge",d:"自分の作品が戦いで倒されたら、相手の命を 1000 減らす。",f:"町を歩いて撮った写真の動画。干されたものにも、言い分がある。"},
+ {n:"ワケル",g:"分",t:"t",e:"counter",d:"相手が言葉の札を使ったら、それを打ち消す（効かなくなる）。",f:"自作の文字起こしアプリ。だれの言葉かを分けてしまえば、言葉は効かない。"},
+ {n:"街の幾何学",g:"街",t:"t",e:"mirror",d:"相手の作品が攻撃してきたら、その作品を倒す。",f:"概念象形アートの作品。街に引かれた線が、攻めてきたものを切りとる。"},
+ // ---- 問題を解いて手に入る札（26-45） ----
  // R
- {n:"箱をずらした家",g:"箱",t:"m",a:"fire",atk:1700,blast:500,rare:"R",f:"三つの正方形の箱を、斜めにずらして重ねた住宅。"},
- {n:"英会話ラボ",g:"声",t:"s",e:"draw",v:3,d:"山札から 3 枚引く。",rare:"R",f:"声だけで練習する AI 英会話アプリ。"},
- {n:"路地の洗濯物",g:"布",t:"m",a:"wind",atk:1500,double:1,rare:"R",f:"町を歩いて撮った写真に、哲学的な語りをつけた動画から。"},
- {n:"ここに在る館",g:"在",t:"m",a:"fire",atk:1900,rare:"R",f:"「I AM HERE」の絵から設計した建築。House of Hereness。"},
- {n:"円錐台の集合住宅",g:"錐",t:"m",a:"water",atk:1900,rare:"R",f:"反った曲面プレートの外皮をまとう集合住宅。"},
- {n:"気分の便り",g:"便",t:"s",e:"heal",v:2000,d:"自分の命を 2000 ふやす。",rare:"R",f:"表情から気分を読み取り、文章にして大切な人に伝えるアプリの構想。"},
+ {n:"箱をずらした家",g:"箱",t:"m",a:"fire",atk:1700,blast:500,rare:"R",f:"三つの正方形の箱を、斜めにずらして重ねた住宅。ずらした箱が、相手に飛び出す。"},
+ {n:"英会話ラボ",g:"声",t:"s",e:"draw",v:3,d:"山札から 3 枚引く。",rare:"R",f:"声だけで練習する AI 英会話アプリ。話せば話すほど、ことばが増える。"},
+ {n:"路地の洗濯物",g:"布",t:"m",a:"wind",atk:1500,double:1,rare:"R",f:"町を歩いて撮った写真に、哲学的な語りをつけた動画から。風にゆれて、二度はためく。"},
+ {n:"ここに在る館",g:"在",t:"m",a:"fire",atk:1900,on:"arrow",ov:500,od:"相手の命を 500 減らす",rare:"R",f:"「I AM HERE」の絵から設計した建築。ここに在ると叫ぶ声が、相手にとどく。"},
+ {n:"円錐台の集合住宅",g:"錐",t:"m",a:"water",atk:1900,on:"heal",ov:500,od:"自分の命を 500 ふやす",rare:"R",f:"反った曲面プレートの外皮をまとう集合住宅。外皮が、住む人を守る。"},
+ {n:"気分の便り",g:"便",t:"s",e:"heal",v:2000,d:"自分の命を 2000 ふやす。",rare:"R",f:"表情から気分を読み取り、文章にして大切な人に伝えるアプリの構想。気持ちが届くと、元気が出る。"},
  // SR
- {n:"温室のサナトリウム",g:"温",t:"m",a:"water",atk:2100,rare:"SR",f:"食堂、ガラスの渡り廊下、球体の温室、扇形の居室をもつ施設。"},
- {n:"語る画像",g:"語",t:"s",e:"arrow",v:1500,d:"相手の命を 1500 減らす。",rare:"SR",f:"画像を入れるだけで、語りと字幕と音楽のついた動画になるアプリ。"},
- {n:"パヴァーヌの建築",g:"譜",t:"m",a:"wind",atk:2200,pierce:1,rare:"SR",f:"ラヴェル「亡き王女のためのパヴァーヌ」の楽譜から導いた建築。"},
- {n:"あわいの家",g:"淡",t:"t",e:"mirror",d:"相手の作品が攻撃してきたら、その作品を倒す。",rare:"SR",f:"「祈りの建築」の別名。攻撃は、あわいでほどける。"},
- {n:"問いとト書き",g:"問",t:"t",e:"counter",d:"相手が言葉の札を使ったら、それを打ち消す（効かなくなる）。",rare:"SR",f:"素御との対話を、問い・ト書き・短い台詞で本にする構想。"},
- {n:"晴盲のカルテ",g:"診",t:"t",e:"mirror",d:"相手の作品が攻撃してきたら、その作品を倒す。",rare:"SR",f:"見える人も見えない人も使える、カルテ管理ソフトの構想。"},
+ {n:"温室のサナトリウム",g:"温",t:"m",a:"water",atk:2100,on:"heal",ov:1000,od:"自分の命を 1000 ふやす",rare:"SR",f:"食堂、ガラスの渡り廊下、球体の温室、扇形の居室をもつ療養の施設。"},
+ {n:"語る画像",g:"語",t:"s",e:"arrow",v:1500,d:"相手の命を 1500 減らす。",rare:"SR",f:"画像を入れるだけで、語りと字幕と音楽のついた動画になる。語られた言葉は強い。"},
+ {n:"パヴァーヌの建築",g:"譜",t:"m",a:"wind",atk:2200,pierce:1,rare:"SR",f:"ラヴェル「亡き王女のためのパヴァーヌ」の楽譜から導いた建築。音楽は、どんな罠もすりぬける。"},
+ {n:"あわいの家",g:"淡",t:"t",e:"mirror",d:"相手の作品が攻撃してきたら、その作品を倒す。",rare:"SR",f:"「祈りの建築」の別名。あわいに踏みこんだものは、帰れない。"},
+ {n:"問いとト書き",g:"問",t:"t",e:"counter",d:"相手が言葉の札を使ったら、それを打ち消す（効かなくなる）。",rare:"SR",f:"素御との対話で生まれた、問いとト書き。問い返されると、言葉は力を失う。"},
+ {n:"晴盲のカルテ",g:"診",t:"t",e:"guardheal",d:"相手の作品が攻撃してきたら、その攻撃を止めて、自分の命を 500 ふやす。",rare:"SR",f:"見える人も見えない人も使えるカルテ管理ソフトの構想。手当てをする人の道具。"},
  {n:"Japanese Lab",g:"日",t:"s",e:"draw",v:3,d:"山札から 3 枚引く。",rare:"SR",f:"英会話ラボの姉妹版。外国の人のための日本語練習アプリ。"},
- {n:"顕現志向",g:"顕",t:"s",e:"arrow",v:2000,d:"相手の命を 2000 減らす。",rare:"SR",f:"EN新聞のコラム。"},
+ {n:"顕現志向",g:"顕",t:"s",e:"arrow",v:2000,d:"相手の命を 2000 減らす。",rare:"SR",f:"EN新聞のコラム。思っていることを、はっきり形にする。"},
  // UR
- {n:"EN新聞",g:"報",t:"s",e:"expose",d:"相手が伏せている罠を、すべて壊す。",rare:"UR",f:"その時のトレンドを新聞の一面にするアプリ。隠しごとは記事になる。"},
- {n:"概念象形アート",g:"象",t:"s",e:"buffall",v:700,d:"自分の場の作品すべての攻撃力を +700（ずっと）。",rare:"UR",f:"AI を使った自分の制作を位置づける概念。"},
- {n:"腐土の間",g:"腐",t:"m",a:"wind",atk:3000,star:1,pierce:1,rare:"UR",f:"自由率俳句の占いで出た句「俺の手で腐らせていた土を踏む」から設計した建築。"},
- {n:"三本の塔",g:"塔",t:"m",a:"fire",atk:3200,star:1,double:1,rare:"UR",f:"小説「城の図面」を書き直した版の仮題。"},
+ {n:"EN新聞",g:"報",t:"s",e:"expose",d:"相手が伏せている罠を、すべて壊す。",rare:"UR",f:"その時のトレンドを新聞の一面にするアプリ。隠れていたものが、すべて記事になる。"},
+ {n:"概念象形アート",g:"象",t:"s",e:"buffall",v:700,d:"自分の場の作品すべての攻撃力を +700（ずっと）。",rare:"UR",f:"AI を使った自分の制作を位置づける概念。名前がつくと、作品はみんな強くなる。"},
+ {n:"腐土の間",g:"腐",t:"m",a:"wind",atk:3000,star:1,pierce:1,on:"weaken",ov:500,od:"相手の場の作品すべての攻撃力を -500",rare:"UR",f:"占いで出た句「俺の手で腐らせていた土を踏む」から設計した建築。足もとの土が腐ると、だれも立っていられない。"},
+ {n:"三本の塔",g:"塔",t:"m",a:"fire",atk:3200,star:1,double:1,rare:"UR",f:"小説「城の図面」を書き直した版の仮題。三本の塔が、続けざまに攻める。"},
  {n:"顕現主義",g:"現",t:"m",a:"wind",atk:3300,star:1,blast:1000,rare:"UR",f:"自分の思想を呼ぶ名。この主義に人を招いている。"},
- {n:"島津耕造",g:"耕",t:"m",a:"fire",atk:4000,star:1,pierce:1,double:1,blast:1000,rare:"UR",f:"この札たちをつくった人。"},
+ {n:"島津耕造",g:"耕",t:"m",a:"fire",atk:4000,star:1,pierce:1,double:1,blast:1000,rare:"UR",f:"この札たちをつくった人。ただし、自分でつくった「素御」には勝てない。"},
+ // ---- 夜の主に勝って手に入る札（46-59、65-67）：ふつう→R、つよい→SR、最強→UR ----
+ {n:"亀川安行",g:"亀",t:"m",a:"water",atk:1800,double:1,rare:"R",f:"兜太現代俳句新人賞に応募したときの俳号。五七五のように、二度打つ。"},
+ {n:"寺社の図面",g:"寺",t:"m",a:"wind",atk:1900,on:"draw",ov:1,od:"山札から 1 枚引く",rare:"R",f:"寺社仏閣を専門とする建設会社で、施工管理と CAD 図面をかいていたころ。図面を引くように、札を引く。"},
+ {n:"朝までの配信",g:"配",t:"s",e:"heal",v:1500,d:"自分の命を 1500 ふやす。",rare:"R",f:"ツイキャスで、顔を出して朝まで続けた長い配信。夜通し話すと、なぜか元気になる。"},
+ {n:"できたよ帳",g:"帳",t:"t",e:"guard",d:"相手の作品が攻撃してきたら、その攻撃を止める（だれも倒れない）。",rare:"R",f:"話すことがむずかしい人のための、作業の進みぐあいを記録するアプリの構想。できたことを守る。"},
+ {n:"文庫めくり",g:"頁",t:"t",e:"counter",d:"相手が言葉の札を使ったら、それを打ち消す（効かなくなる）。",rare:"R",f:"本をめくる手ざわりを大事にした、青空文庫のリーダーアプリの構想。ページをめくれば、言葉は次へ流れる。"},
+ {n:"マテーラの洞窟",g:"洞",t:"m",a:"water",atk:2200,double:1,rare:"SR",f:"「10の暮らし、10のレベル」の手がかりにした、マテーラの洞窟住居。"},
+ {n:"空想力学",g:"楽",t:"s",e:"buffall",v:400,d:"自分の場の作品すべての攻撃力を +400（ずっと）。",rare:"SR",f:"作曲と MV づくりを、お金を受け取らずに引き受けた曲。音楽は、場のみんなを持ち上げる。"},
+ {n:"敷地から立つ建築",g:"敷",t:"m",a:"wind",atk:2300,pierce:1,rare:"SR",f:"郵便番号と地図から、その場所に必然の建築を立ち上げるアプリ。土地に根ざすものは、罠に足をとられない。"},
+ {n:"八千代台駅前",g:"駅",t:"m",a:"fire",atk:2100,blast:500,rare:"SR",f:"住んでいる町の駅前開発の理念を、写真と語りで動画にした。"},
+ {n:"こたえ帳",g:"答",t:"t",e:"revenge",d:"自分の作品が戦いで倒されたら、相手の命を 1000 減らす。",rare:"SR",f:"事業所で、職員の代わりに利用者の質問に答えるアプリの構想。"},
+ {n:"住む機会を作る",g:"住",t:"m",a:"wind",atk:3100,star:1,blast:800,on:"heal",ov:800,od:"自分の命を 800 ふやす",rare:"UR",f:"付箋の一言「音楽があり 匂いがある 五感にうったえる 建築」から始めた企画。"},
+ {n:"KS企画",g:"研",t:"m",a:"fire",atk:3400,star:1,double:1,on:"draw",ov:1,od:"山札から 1 枚引く",rare:"UR",f:"島津耕造の頭文字をとった、仲間と立ち上げた会社。仲間が増えるように、札が増える。"},
+ {n:"前衛",g:"衛",t:"s",e:"arrow",v:2500,self:500,d:"相手の命を 2500 減らす。そのかわり、自分の命も 500 減る。",rare:"UR",f:"前衛に立ち続ければ、必ず傷を負う。それでもやめない。"},
+ {n:"タイへの旅",g:"旅",t:"s",e:"draw",v:4,d:"山札から 4 枚引く。",rare:"UR",f:"研修先にタイを望んで書いた、在外研修の応募。旅に出ると、手に入るものが多い。"},
+ // ---- クルカジ（みかん）の札（60-66）。はじめから持っている。性格から効果を読み取った ----
+ {n:"クルカジ（みかん）",g:"柑",t:"m",a:"fire",atk:1500,pay:1,joke:1,f:"KS企画に新しく入った社員で、建築の AI 動画をつくる。つらいことも笑いに変えるネタの名手。ただひとりの歩合制で、働いた分だけ手札が増える。"},
+ {n:"クルカジ（みかん）",g:"柑",t:"m",a:"fire",atk:1500,pay:1,joke:1,f:"KS企画に新しく入った社員で、建築の AI 動画をつくる。つらいことも笑いに変えるネタの名手。ただひとりの歩合制で、働いた分だけ手札が増える。"},
+ {n:"クルカジ（みかん）",g:"柑",t:"m",a:"fire",atk:1500,pay:1,joke:1,f:"KS企画に新しく入った社員で、建築の AI 動画をつくる。つらいことも笑いに変えるネタの名手。ただひとりの歩合制で、働いた分だけ手札が増える。"},
+ {n:"みかんの建築動画",g:"映",t:"s",e:"revive",d:"自分の倒れた作品のうち、いちばん強いものを場によみがえらせる（場がいっぱいなら手札へ）。",f:"クルカジがつくる、建築を題材にした AI 動画。倒れた建築も、映像の中でよみがえる。"},
+ {n:"みかんの祈り",st:1,g:"祷",t:"s",e:"tutor",d:"山札の中でいちばん強い作品を 1 枚、手札に加える。",f:"「主よ、導き給え」。クルカジは祈りの言葉をよく使う。祈れば、いちばん頼れるものが来る。"},
+ {n:"みかんのログ",g:"録",t:"t",e:"record",d:"自分の作品が戦いで倒されたら、その作品を手札にもどす。",f:"なんでも言葉にして、記録に残したがる。ログに残ったものは、消えない。"},
+ {n:"みかんの歩合",g:"歩",t:"s",e:"perMon",v:400,d:"自分の場の作品 1 つにつき、相手の命を 400 減らす。",f:"だれとでもほどよい距離でつながる、仲間の真ん中にいる人。場の仲間が多いほど効く。"},
+ // ---- 夜の主に勝って手に入る札（つづき） ----
+ {n:"消尽",g:"尽",t:"s",e:"shoujin",v:500,d:"手札をすべて捨てる。捨てた 1 枚につき、相手の命を 500 減らす。",rare:"SR",f:"「コスパが悪いほど楽しい」。精進ではなく消尽。使い果たすほど、強い。"},
+ {n:"エラー",st:1,g:"誤",t:"s",e:"error",d:"何が起きるかわからない。8 つの効果のどれか 1 つが出る。",rare:"SR",f:"「人間ができることはただ 1 つ、エラー」。AI にはない、人間だけの力。"},
+ {n:"恩返し",g:"恩",t:"s",e:"revive",d:"自分の倒れた作品のうち、いちばん強いものを場によみがえらせる（場がいっぱいなら手札へ）。",rare:"R",f:"通信がなくなっても、自分なりのやり方で本当の恩を返す。師のおかげで目が覚めた。"},
+
+ // ---- 盾（シールド）の札。施工の現場の経験から（70-72） ----
+ {n:"養生シート",g:"養",t:"s",e:"shieldadd",v:1,st:1,d:"山札の上から 1 枚を、自分の盾に加える。",f:"施工管理の現場では、まず建物を養生シートで守る。守りを一枚ふやす。"},
+ {n:"解体工事",g:"壊",t:"s",e:"shieldbreak",v:1,d:"相手の盾を 1 枚割る。",f:"建てる仕事は、こわす仕事を知ることから。相手の守りを一枚はがす。"},
+ {n:"二条城の石垣",g:"垣",t:"s",e:"shieldadd",v:2,st:1,d:"山札の上から 2 枚を、自分の盾に加える。",rare:"SR",f:"本丸の現場で見上げた石垣。何百年も城を守ってきた。"},
 ];
 const BASE_N=26, DMIN=20, DMAX=30;
 const REWARDS=[...Array(20).keys()].map(i=>26+i), PER=3;
-const ABIL=c=>[c.double?["連撃","1 ターンに 2 回攻撃できる"]:null,c.pierce?["貫通","相手の罠が効かない（出したときも、攻撃したときも）"]:null,c.blast?["開幕",`場に出たとき、相手の命を ${c.blast} 減らす`]:null].filter(Boolean);
+const WINS=[...[...Array(14).keys()].map(i=>46+i),67,68,69,72], FREE=[60,61,62,63,64,65,66,70,71], SHIELDS=5;
+/* 夜の主の強さ：デッキ（札の強さ）が変わる。勝つと、その強さに応じたレアカード */
+const LV=[
+ {n:"やさしい",d:"弱めの作品と、基本の言葉・罠だけ",r:null},
+ {n:"ふつう",d:"はじめから持っている札",r:"R"},
+ {n:"つよい",d:"R・SR の強い札が入る",r:"SR"},
+ {n:"最強",d:"UR の切り札がそろう",r:"UR"},
+];
+function cpuDeck(lv){
+  const all=[...CARDS.keys()],pw=i=>{const c=CARDS[i];return c.t==="m"?c.atk+(c.double?600:0)+(c.pierce?400:0)+(c.blast||0):({R:1800,SR:2400,UR:3200}[c.rare]||1200)};
+  if(lv===0){ // 弱い作品ばかり。強い言葉や、倒す罠は入れない
+    const w=all.filter(i=>i<BASE_N&&(CARDS[i].t==="m"?!CARDS[i].star&&CARDS[i].atk<=1300:["heal","draw","guard"].includes(CARDS[i].e)));
+    const d=[];while(d.length<20)d.push(w[d.length%w.length]);return d}
+  if(lv===1)return [...Array(BASE_N).keys()];
+  const pool=lv===2?all.filter(i=>CARDS[i].rare!=="UR"):all;
+  const mons=pool.filter(i=>CARDS[i].t==="m").sort((a,b)=>pw(b)-pw(a)),oth=pool.filter(i=>CARDS[i].t!=="m").sort((a,b)=>pw(b)-pw(a));
+  const stars=mons.filter(i=>CARDS[i].star).slice(0,lv===2?3:5),plain=mons.filter(i=>!CARDS[i].star).slice(0,lv===2?13:8);
+  const d=[...stars,...plain,...oth.slice(0,30-stars.length-plain.length)];
+  if(lv===3){const top=mons.filter(i=>!CARDS[i].star).slice(0,4);top.forEach((x,k)=>d[d.length-1-k]=x)} // 最強：強い作品を 2 枚ずつ
+  return d;
+}
+const ABIL=c=>[c.on?["出たとき",c.od]:null,c.pay?["歩合","攻撃で相手の命を減らすか盾を割ったら、1 枚引く"]:null,c.joke?["笑い","戦いで負けて命が減るときは、かわりに同じだけ命がふえる"]:null,c.slay?["天敵",`「${c.slay}」との戦いでは必ず勝つ`]:null,c.st?["S・トリガー","盾から手札に来たとき、ただで発動する"]:null,c.double?["連撃","1 ターンに 2 回攻撃できる"]:null,c.pierce?["貫通","相手の罠が効かない（出したときも、攻撃したときも）"]:null,c.blast?["開幕",`場に出たとき、相手の命を ${c.blast} 減らす`]:null].filter(Boolean);
 const QUIZ=[ // [question, correct, wrong, wrong, wrong]
 ["島津耕造は、自分の本業を何だと考えている？", "俳人・詩人・小説家", "建築家", "プログラマー", "映像監督"],
 ["自分の立ち位置について、どう考えている？", "自分はほぼ確実に「前衛」にいる", "いつも流行の真ん中にいる", "昔ながらの伝統の側にいる", "後ろから人を支える側にいる"],
@@ -279,7 +335,7 @@ const QUIZ=[ // [question, correct, wrong, wrong, wrong]
 ["「二つの器が重なり合う家」の副題は？", "淡い色の家", "濃い色の家", "音のする家", "影のない家"],
 ["その付箋の写真につけた名前は？", "第六感", "五感", "付箋一号", "原点"],
 ];
-const TRIG={pit:"強い作品が出たら",mirror:"攻撃されたら",guard:"攻撃されたら",revenge:"倒されたら",counter:"言葉を使われたら"};
+const TRIG={pit:"強い作品が出たら",mirror:"攻撃されたら",guard:"攻撃されたら",guarddraw:"攻撃されたら",guardheal:"攻撃されたら",revenge:"倒されたら",record:"倒されたら",counter:"言葉を使われたら"};
 const LP0=8000, HAND0=5, TYPE={m:"作品",s:"言葉",t:"罠"};
 
 /* ================= engine (pure: seed + action list) ================= */
@@ -290,10 +346,10 @@ const opp=s=>s==="A"?"B":"A";
 const clone=o=>JSON.parse(JSON.stringify(o));
 function newState(seed,decks){
   const s={lp:{A:LP0,B:LP0},hand:{A:[],B:[]},deck:{A:[],B:[]},grave:{A:[],B:[]},defs:{},
-    mon:{A:[null,null,null],B:[null,null,null]},trap:{A:[null,null],B:[null,null]},act:(seed>>>3)&1?"B":"A",turn:1,summoned:false,over:null,seed,bet:{A:false,B:false}};
+    mon:{A:[null,null,null],B:[null,null,null]},trap:{A:[null,null],B:[null,null]},act:(seed>>>3)&1?"B":"A",turn:1,summoned:false,over:null,seed,bet:{A:false,B:false},shield:{A:[],B:[]}};
   for(const sd of ["A","B"]){
     const order=shuffle(decks[sd].slice(),rng(seed+(sd==="A"?11:29)));
-    s.defs[sd]=order;s.deck[sd]=order.map((_,i)=>sd+i);s.hand[sd]=s.deck[sd].splice(0,HAND0);
+    s.defs[sd]=order;s.deck[sd]=order.map((_,i)=>sd+i);s.hand[sd]=s.deck[sd].splice(0,HAND0);s.shield[sd]=s.deck[sd].splice(0,SHIELDS);
   }
   return s;
 }
@@ -306,7 +362,10 @@ const BET_LP=2000,BET_GAP=3000;
 const canBet=(s,sd)=>!s.over&&!(s.bet&&s.bet[sd])&&s.lp[sd]<=BET_LP&&s.lp[opp(sd)]-s.lp[sd]>=BET_GAP;
 function eff(s,attSide,ai,defSide,di){
   const a=s.mon[attSide][ai],d=s.mon[defSide][di],ca=card(s,a.id),cd=card(s,d.id);
-  return [a.atk+(BEATS[ca.a]===cd.a?500:0),d.atk+(BEATS[cd.a]===ca.a?500:0)];
+  let ea=a.atk+(BEATS[ca.a]===cd.a?500:0),ed=d.atk+(BEATS[cd.a]===ca.a?500:0);
+  if(ca.slay&&cd.n===ca.slay)ea=Math.max(ea,ed+1000);
+  if(cd.slay&&ca.n===cd.slay)ed=Math.max(ed,ea+1000);
+  return [ea,ed];
 }
 /* "" if the action is allowed, otherwise a plain-language reason */
 function why(s,sd,a){
@@ -341,10 +400,39 @@ function apply(s,a){
   const [t,x,y]=a;
   const over=()=>{if(s.over)return true;const da=s.lp.A<=0,db=s.lp.B<=0;if(da||db){s.over=da&&db?"draw":da?"B":"A";E("over",{win:s.over});return true}return false};
   const dmg=(sd,n)=>{s.lp[sd]-=n;E("damage",{side:sd,amt:n});return over()};
-  const kill=(sd,i)=>{const id=s.mon[sd][i].id;s.grave[sd].push(id);s.mon[sd][i]=null;E("destroy",{side:sd,slot:i,id})};
+  const kill=(sd,i)=>{const id=s.mon[sd][i].id;s.grave[sd].push(id);s.mon[sd][i]=null;E("destroy",{side:sd,slot:i,id});return id};
   const fire=(sd,e)=>{const i=s.trap[sd].findIndex(id=>id&&card(s,id).e===e);if(i<0)return false;const id=s.trap[sd][i];
     s.trap[sd][i]=null;s.grave[sd].push(id);E("trap",{side:sd,slot:i,id});return true};
   const draw=(sd,n,why)=>{let k=0;for(let i=0;i<n;i++){const c=s.deck[sd].shift();if(c){s.hand[sd].push(c);k++}}if(k)E("draw",{side:sd,n:k,why});return k};
+  const fireAny=(sd,es)=>{for(const e of es)if(fire(sd,e))return e;return null};
+  const doEff=(sd,e,v,c)=>{const op=opp(sd);
+    if(e==="arrow")return dmg(op,v||800);
+    if(e==="heal"){v=v||1000;s.lp[sd]+=v;E("heal",{side:sd,amt:v});return false}
+    if(e==="bolt"||e==="snipe"){const i=e==="bolt"?strongest(s,op):weakest(s,op);if(i>=0)kill(op,i);else E("fizzle");return false}
+    if(e==="buff"){const i=strongest(s,sd);if(i>=0){v=v||500;s.mon[sd][i].atk+=v;E("buff",{side:sd,slot:i,amt:v})}else E("fizzle");return false}
+    if(e==="draw"){if(!draw(sd,v||2))E("fizzle");return false}
+    if(e==="expose"){let k=0;s.trap[op].forEach((id,i)=>{if(id){s.trap[op][i]=null;s.grave[op].push(id);k++;E("trapbreak",{side:op,slot:i,id})}});if(!k)E("fizzle");return false}
+    if(e==="buffall"){if(hasMon(s,sd)){v=v||300;s.mon[sd].forEach(m=>{if(m)m.atk+=v});E("buffall",{side:sd,amt:v})}else E("fizzle");return false}
+    if(e==="weaken"){if(hasMon(s,op)){v=v||300;s.mon[op].forEach(m=>{if(m)m.atk=Math.max(0,m.atk-v)});E("weaken",{side:op,amt:v})}else E("fizzle");return false}
+    if(e==="halve"){const i=strongest(s,op);if(i>=0){const m=s.mon[op][i],d=Math.ceil(m.atk/2);m.atk-=d;E("halve",{side:op,slot:i,amt:d})}else E("fizzle");return false}
+    if(e==="revive"){let b=-1;s.grave[sd].forEach((id,i)=>{if(card(s,id).t==="m"&&(b<0||card(s,id).atk>card(s,s.grave[sd][b]).atk))b=i});if(b<0){E("fizzle");return false}
+      const id=s.grave[sd].splice(b,1)[0],slot=s.mon[sd].indexOf(null);
+      if(slot>=0){s.mon[sd][slot]={id,atk:card(s,id).atk,done:false};E("revive",{side:sd,slot,id})}else{s.hand[sd].push(id);E("revivehand",{side:sd,id})}return false}
+    if(e==="tutor"){let b=-1;s.deck[sd].forEach((id,i)=>{if(card(s,id).t==="m"&&(b<0||card(s,id).atk>card(s,s.deck[sd][b]).atk))b=i});if(b<0){E("fizzle");return false}
+      const id=s.deck[sd].splice(b,1)[0];s.hand[sd].push(id);E("tutor",{side:sd,id});return false}
+    if(e==="perMon"){const n=s.mon[sd].filter(Boolean).length;if(!n){E("fizzle");return false}return dmg(op,n*(v||400))}
+    if(e==="shoujin"){const h=s.hand[sd].length;if(!h){E("fizzle");return false}s.grave[sd].push(...s.hand[sd]);s.hand[sd]=[];E("discard",{side:sd,n:h});return dmg(op,h*(v||500))}
+    if(e==="shieldadd"){let k=0;for(let i=0;i<(v||1);i++){const id=s.deck[sd].shift();if(id){s.shield[sd].push(id);k++}}if(k)E("shieldadd",{side:sd,n:k});else E("fizzle");return false}
+    if(e==="shieldbreak"){if(!s.shield[op].length){E("fizzle");return false}for(let i=0;i<(v||1)&&s.shield[op].length;i++)if(brk(op))return true;return false}
+    if(e==="error"){const pool=["arrow","heal","bolt","draw","buffall","weaken","halve","revive"];
+      const r=pool[Math.floor(rng(hashStr((s.seed||0)+"|err|"+s.turn+"|"+sd+"|"+s.grave[sd].length+"|"+s.hand[sd].length))()*pool.length)];
+      E("error",{side:sd,e:r});return doEff(sd,r,{arrow:1200,heal:1200,draw:2,buffall:400,weaken:400}[r],c)}
+    return false};
+  /* 盾を 1 枚割る。盾は持ち主の手札へ。S・トリガーならただで発動する */
+  const brk=sd=>{const id=s.shield[sd].pop();if(!id)return false;E("shield",{side:sd,id,left:s.shield[sd].length});const c=card(s,id);
+    if(c.st&&c.t==="s"){s.grave[sd].push(id);E("strigger",{side:sd,id});return doEff(sd,c.e,c.v,c)}
+    if(c.st&&c.t==="t"){const i=s.trap[sd].indexOf(null);if(i>=0){s.trap[sd][i]=id;E("strigger",{side:sd,id});E("set",{side:sd,slot:i,id});return false}}
+    s.hand[sd].push(id);E("shieldhand",{side:sd});return false};
   const endByCount=()=>{s.over=s.lp.A===s.lp.B?"draw":s.lp.A>s.lp.B?"A":"B";E("over",{win:s.over})};
 
   if(t==="S"){
@@ -353,31 +441,32 @@ function apply(s,a){
     if(c.star){const w=weakest(s,me),tid=s.mon[me][w].id;s.grave[me].push(tid);s.mon[me][w]=null;E("tribute",{slot:w,id:tid});slot=w}
     s.mon[me][slot]={id:x,atk:c.atk,done:false};s.summoned=true;E("summon",{slot,id:x,star:!!c.star});
     if(c.atk>=1500&&!c.pierce&&fire(o,"pit")){kill(me,slot);return ev}
+    if(c.on){E("ability",{slot,id:x});if(doEff(me,c.on,c.ov,c))return ev}
     if(c.blast)dmg(o,c.blast);
   }else if(t==="P"){
     const c=card(s,x);s.hand[me]=s.hand[me].filter(h=>h!==x);s.grave[me].push(x);E("spell",{id:x});
     if(fire(o,"counter")){E("negate",{what:"spell"});return ev}
-    if(c.e==="arrow")dmg(o,c.v||800);
-    if(c.e==="heal"){const v=c.v||1000;s.lp[me]+=v;E("heal",{amt:v})}
-    if(c.e==="bolt"){const i=strongest(s,o);if(i>=0)kill(o,i);else E("fizzle")}
-    if(c.e==="buff"){const i=strongest(s,me);if(i>=0){s.mon[me][i].atk+=500;E("buff",{slot:i})}else E("fizzle")}
-    if(c.e==="draw")draw(me,c.v||2);
-    if(c.e==="expose"){let k=0;s.trap[o].forEach((id,i)=>{if(id){s.trap[o][i]=null;s.grave[o].push(id);k++;E("trapbreak",{side:o,slot:i,id})}});if(!k)E("fizzle")}
-    if(c.e==="buffall"){if(hasMon(s,me)){const v=c.v||300;s.mon[me].forEach(m=>{if(m)m.atk+=v});E("buffall",{amt:v})}else E("fizzle")}
+    if(doEff(me,c.e,c.v,c))return ev;
+    if(c.self)dmg(me,c.self);
   }else if(t==="T"){
     const slot=s.trap[me].indexOf(null);s.hand[me]=s.hand[me].filter(h=>h!==x);s.trap[me][slot]=x;E("set",{slot,id:x});
   }else if(t==="A"){
     const m=s.mon[me][x],mc=card(s,m.id);m.used=(m.used||0)+1;m.done=m.used>=(mc.double?2:1);E("attack",{from:x,to:y});
     if(!mc.pierce){
       if(fire(o,"mirror")){kill(me,x);return ev}
-      if(fire(o,"guard")){E("negate");return ev}
+      const gd=fireAny(o,["guard","guarddraw","guardheal"]);
+      if(gd){E("negate");if(gd==="guarddraw")draw(o,1);if(gd==="guardheal"){s.lp[o]+=500;E("heal",{side:o,amt:500})}return ev}
     }
-    if(y===-1){if(!dmg(o,m.atk))draw(o,1,"direct");return ev}
-    const [ea,ed]=eff(s,me,x,o,y);E("clash",{from:x,to:y,ea,ed,ba:m.atk,bd:s.mon[o][y].atk,ia:m.id,id2:s.mon[o][y].id});
-    const rev=sd=>fire(sd,"revenge")?dmg(opp(sd),1000):false;
-    if(ea>ed){kill(o,y);if(rev(o))return ev;dmg(o,ea-ed)}
-    else if(ea<ed){kill(me,x);if(rev(me))return ev;dmg(me,ed-ea)}
-    else{kill(o,y);kill(me,x);if(rev(o))return ev;rev(me)}
+    if(y===-1){
+      if(s.shield[o].length){if(brk(o))return ev;if(mc.pay)draw(me,1,"pay");return ev}
+      if(!dmg(o,m.atk)&&mc.pay)draw(me,1,"pay");return ev}
+    const dc=card(s,s.mon[o][y].id);
+    const [ea,ed]=eff(s,me,x,o,y);E("clash",{from:x,to:y,ea,ed,ba:m.atk,bd:s.mon[o][y].atk,ia:m.id,id2:s.mon[o][y].id,xa:!!(mc.slay&&dc.n===mc.slay),xd:!!(dc.slay&&mc.n===dc.slay)});
+    const after=(sd,id)=>{if(fire(sd,"record")){const k=s.grave[sd].lastIndexOf(id);if(k>=0){s.grave[sd].splice(k,1);s.hand[sd].push(id);E("recorded",{side:sd,id})}}return fire(sd,"revenge")?dmg(opp(sd),1000):false};
+    const hurt=(sd,n,c)=>{if(c.joke){s.lp[sd]+=n;E("joke",{side:sd,amt:n,id:c.n});return false}return dmg(sd,n)};
+    if(ea>ed){const id=kill(o,y);if(after(o,id))return ev;if(hurt(o,ea-ed,dc))return ev;if(mc.pay&&!dc.joke)draw(me,1,"pay")}
+    else if(ea<ed){const id=kill(me,x);if(after(me,id))return ev;hurt(me,ed-ea,mc)}
+    else{const i1=kill(o,y),i2=kill(me,x);if(after(o,i1))return ev;after(me,i2)}
   }else if(t==="G"){
     if(!s.bet)s.bet={A:false,B:false};s.bet[me]=true;
     const win=rng(hashStr((s.seed||0)+"|bet|"+s.turn+"|"+me+"|"+s.lp.A+"|"+s.lp.B))()<0.5;
@@ -413,7 +502,16 @@ function ai(s,me){
   if((id=find("buff"))&&hasMon(s,me))return ["P",id];
   if((id=find("expose"))&&s.trap[o].some(Boolean))return ["P",id];
   if((id=find("buffall"))&&s.mon[me].filter(Boolean).length>=2)return ["P",id];
-  if((id=find("arrow")))return ["P",id];
+  if((id=find("arrow"))&&(!card(s,id).self||s.lp[me]>card(s,id).self+1500))return ["P",id];
+  for(const h of H){const c=card(s,h);if(c.t!=="s"||!ok(["P",h]))continue;const e=c.e;
+    if((e==="weaken"||e==="halve"||e==="snipe")&&hasMon(s,o))return ["P",h];
+    if(e==="revive"&&s.grave[me].some(g=>card(s,g).t==="m"))return ["P",h];
+    if(e==="tutor"&&s.deck[me].some(g=>card(s,g).t==="m"))return ["P",h];
+    if(e==="perMon"&&s.mon[me].filter(Boolean).length>=2)return ["P",h];
+    if(e==="shoujin"&&H.length>=4)return ["P",h];
+    if(e==="shieldadd"&&s.deck[me].length>4)return ["P",h];
+    if(e==="shieldbreak"&&s.shield[o].length)return ["P",h];
+    if(e==="error")return ["P",h];}
   const tr=H.find(h=>card(s,h).t==="t");if(tr&&ok(["T",tr]))return ["T",tr];
   if(s.turn>1){
     const order=s.mon[me].map((m,i)=>m&&!m.done?i:-1).filter(i=>i>=0).sort((a,b)=>s.mon[me][b].atk-s.mon[me][a].atk);
@@ -427,7 +525,7 @@ function ai(s,me){
   return ["E"];
 }
 const enc=a=>a.join("|"), dec=t=>{const p=String(t).split("|");return p[0]==="A"?["A",+p[1],+p[2]]:p};
-if(typeof document==="undefined"){globalThis.YF={newState,apply,ai,why};return}
+if(typeof document==="undefined"){globalThis.YF={newState,apply,ai,why,cpuDeck,CARDS,art,DMIN,DMAX};return}
 
 /* ================= session ================= */
 const app=document.getElementById("app"),hdr=document.getElementById("hdr");
@@ -438,7 +536,7 @@ let save={owned:[],deck:null,solved:[]};
 try{const j=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");if(j&&typeof j==="object")save=Object.assign(save,j)}catch(e){}
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save))}catch(e){}}
 const BASE=[...Array(BASE_N).keys()];
-const owned=()=>[...BASE,...(save.owned||[]).filter(i=>Number.isInteger(i)&&i>=BASE_N&&i<CARDS.length)];
+const owned=()=>[...BASE,...FREE,...(save.owned||[]).filter(i=>Number.isInteger(i)&&i>=BASE_N&&i<CARDS.length)];
 function myDeck(){const own=new Set(owned());let d=Array.isArray(save.deck)?[...new Set(save.deck)].filter(i=>own.has(i)):[];if(d.length<DMIN||d.length>DMAX)d=BASE.slice();return d}
 let roomApi=null,named=null,roomReady="wait",peer={n:0,side:null},notice="",cpuTimer=null;
 const draft={code:String(Math.floor(1000+Math.random()*9000)),side:"A"};
@@ -466,6 +564,7 @@ async function runQueue(){
   if(animating)return;animating=true;render(shown);
   while(queue.length){const ev=queue.shift();try{await fx(ev)}catch(e){}shown=ev.s}
   shown=clone(cur);animating=false;
+  if(mode==="cpu"&&cur.over===my)giveWinGift();
   if(mode==="local"&&!cur.over&&cur.act!==my){my=cur.act;showCover(my)}
   render(shown);
   if(mode==="cpu"&&cur.act!==my&&!cur.over){clearTimeout(cpuTimer);cpuTimer=setTimeout(cpuStep,700+Math.random()*700)}
@@ -544,19 +643,91 @@ function showCover(sd){
   c.hidden=false;document.getElementById("cvOpen").addEventListener("click",()=>{c.hidden=true});
 }
 function startLocal(){mode="local";code=String(Math.random());g=0;actions=[];decks={A:myDeck(),B:myDeck()};my=newState(seed(),decks).act;rebuild(false);showCover(my)}
-function startCpu(){mode="cpu";my="A";code=String(Math.random());g=0;actions=[];decks={A:myDeck(),B:BASE.slice()};rebuild(false)}
-function again(){clearTimeout(cpuTimer);if(mode==="local"){code=String(Math.random());actions=[];my=newState(seed(),decks).act;rebuild(false);showCover(my);return}if(mode==="cpu")code=String(Math.random());else g++;actions=[];share();rebuild(false)}
+function startCpu(){mode="cpu";my="A";code=String(Math.random());g=0;actions=[];winGift=undefined;decks={A:myDeck(),B:cpuDeck(cpuLv())};rebuild(false)}
+const cpuLv=()=>Number.isInteger(save.lvl)&&save.lvl>=0&&save.lvl<LV.length?save.lvl:1;
+let winGift;
+function giveWinGift(){
+  if(winGift!==undefined)return;winGift=null;const tier=LV[cpuLv()].r;if(!tier)return;
+  const own=new Set(owned()),order=["UR","SR","R"],from=order.slice(order.indexOf(tier));
+  for(const r of from){const left=WINS.filter(i=>CARDS[i].rare===r&&!own.has(i));if(left.length){winGift=left[Math.floor(Math.random()*left.length)];save.owned=[...new Set([...(save.owned||[]),winGift])];persist();return}}
+}
+function again(){clearTimeout(cpuTimer);if(mode==="local"){code=String(Math.random());actions=[];my=newState(seed(),decks).act;rebuild(false);showCover(my);return}if(mode==="cpu"){code=String(Math.random());winGift=undefined}else g++;actions=[];share();rebuild(false)}
 function toLobby(){clearTimeout(cpuTimer);queue=[];pjStop();if(named){named.leave().catch(()=>{});named=null}mode=null;screen=null;render()}
 
 /* ================= render ================= */
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+/* ================= chibi card art (inline SVG, no images) ================= */
+const PIC={"電柱の詩路":"pole","大蛙美術館":"frog","膿む映画館":"popcorn","コロッセオの塔":"tower","少し外に出られる家":"house","二つの器の家":"bowl","10の暮らし":"apartment","水冠の塔":"tower","幾何学的滝行建築":"falls","素御":"phone","斜めの家":"house","森の情景":"tree","ボロメオの寝所":"knot","二条城 本丸":"castle","自由率俳句":"scroll","祈りの手":"hand","豆腐の角":"tofu","AIは筆":"brush","志向縁占い":"crystal","城の図面":"scroll","ネットリテラシー":"phone","一本の傘":"umbrella","ふたつの窓":"window","干された町":"laundry","ワケル":"mic","街の幾何学":"apartment","箱をずらした家":"boxes","英会話ラボ":"mic","路地の洗濯物":"laundry","ここに在る館":"house","円錐台の集合住宅":"cone","気分の便り":"letter","温室のサナトリウム":"dome","語る画像":"frame","パヴァーヌの建築":"note","あわいの家":"house","問いとト書き":"scroll","晴盲のカルテ":"letter","Japanese Lab":"mic","顕現志向":"newspaper","EN新聞":"newspaper","概念象形アート":"frame","腐土の間":"tree","三本の塔":"towers","顕現主義":"crystal","島津耕造":"person","クルカジ（みかん）":"mikan","みかんの建築動画":"frame","みかんの祈り":"hand","みかんのログ":"scroll","みかんの歩合":"mikan","消尽":"crystal","エラー":"phone","恩返し":"hand","養生シート":"laundry","解体工事":"boxes","二条城の石垣":"castle","亀川安行":"brush","寺社の図面":"castle","朝までの配信":"phone","できたよ帳":"letter","文庫めくり":"scroll","マテーラの洞窟":"dome","空想力学":"note","敷地から立つ建築":"boxes","八千代台駅前":"apartment","こたえ帳":"letter","住む機会を作る":"house","KS計画研究所":"towers","前衛":"crystal","タイへの旅":"frame"};
+const PAL={fire:["#FFD9C8","#E0603F"],water:["#D3E5FA","#4386D6"],wind:["#D6F0CB","#4FA86F"],s:["#F7E8B8","#C9952E"],t:["#F2D3E2","#B0507E"]};
+const K="#3A2E2A";
+function face(cx,cy,s,g,h){
+  const st=h%3,ex=g*s,r=4.2*s;let e="";
+  for(const x of [cx-ex,cx+ex]){
+    if(st===1)e+=`<path d="M${x-r} ${cy+1*s} Q${x} ${cy-r*1.3} ${x+r} ${cy+1*s}" fill="none" stroke="${K}" stroke-width="${2.6*s}" stroke-linecap="round"/>`;
+    else{const R=st===2?r*1.25:r;e+=`<ellipse cx="${x}" cy="${cy}" rx="${R*.85}" ry="${R*1.05}" fill="${K}"/><circle cx="${x+R*.3}" cy="${cy-R*.4}" r="${R*.38}" fill="#fff"/>`+(st===2?`<circle cx="${x-R*.3}" cy="${cy+R*.4}" r="${R*.18}" fill="#fff"/>`:"")}
+  }
+  const bl=(g+7)*s;
+  e+=`<ellipse cx="${cx-bl}" cy="${cy+5*s}" rx="${4*s}" ry="${2.4*s}" fill="#F59AA6" opacity=".75"/><ellipse cx="${cx+bl}" cy="${cy+5*s}" rx="${4*s}" ry="${2.4*s}" fill="#F59AA6" opacity=".75"/>`;
+  e+=h%2?`<path d="M${cx-3.5*s} ${cy+5*s} Q${cx-1.75*s} ${cy+8*s} ${cx} ${cy+5.5*s} Q${cx+1.75*s} ${cy+8*s} ${cx+3.5*s} ${cy+5*s}" fill="none" stroke="${K}" stroke-width="${2*s}" stroke-linecap="round"/>`
+    :`<path d="M${cx-3*s} ${cy+5*s} Q${cx} ${cy+9*s} ${cx+3*s} ${cy+5*s}" fill="#E8616E" stroke="${K}" stroke-width="${1.6*s}" stroke-linejoin="round"/>`;
+  return e;
+}
+const SH={ // each returns [body svg, face cx, cy, scale, eye gap]
+ house:(B,C)=>[`<rect x="24" y="46" width="52" height="42" rx="9" fill="${B}"/><path d="M14 52 L50 18 L86 52 Q50 44 14 52Z" fill="${C}"/><rect x="62" y="24" width="9" height="16" rx="2" fill="${C}"/>`,50,64,1,11],
+ tower:(B,C)=>[`<rect x="33" y="28" width="34" height="62" rx="12" fill="${B}"/><path d="M27 33 L50 6 L73 33 Q50 27 27 33Z" fill="${C}"/><rect x="45" y="74" width="10" height="16" rx="5" fill="${C}" opacity=".6"/>`,50,52,.9,9],
+ towers:(B,C)=>[`<rect x="12" y="42" width="22" height="48" rx="9" fill="${B}"/><rect x="66" y="42" width="22" height="48" rx="9" fill="${B}"/><path d="M9 45 L23 24 L37 45Z M63 45 L77 24 L91 45Z" fill="${C}"/><rect x="33" y="28" width="34" height="62" rx="12" fill="${B}"/><path d="M27 33 L50 6 L73 33 Q50 27 27 33Z" fill="${C}"/>`,50,54,.85,9],
+ castle:(B,C)=>[`<rect x="20" y="54" width="60" height="34" rx="7" fill="${B}"/><path d="M12 58 Q50 40 88 58 Q50 52 12 58Z" fill="${C}"/><rect x="34" y="30" width="32" height="24" rx="5" fill="${B}"/><path d="M26 35 Q50 10 74 35 Q50 29 26 35Z" fill="${C}"/><path d="M44 14 L50 8 L56 14" fill="none" stroke="${C}" stroke-width="3" stroke-linecap="round"/>`,50,71,.85,11],
+ tree:(B,C)=>[`<rect x="42" y="64" width="16" height="26" rx="5" fill="#C9A27A"/><circle cx="30" cy="48" r="17" fill="${C}" opacity=".55"/><circle cx="70" cy="48" r="17" fill="${C}" opacity=".55"/><circle cx="50" cy="42" r="28" fill="${B}"/>`,50,44,1,10],
+ frog:(B,C)=>[`<circle cx="31" cy="38" r="13" fill="${B}"/><circle cx="69" cy="38" r="13" fill="${B}"/><ellipse cx="50" cy="62" rx="36" ry="27" fill="${B}"/><ellipse cx="50" cy="72" rx="20" ry="11" fill="#fff" opacity=".7"/>`,50,46,1,19],
+ popcorn:(B,C)=>[`<circle cx="34" cy="40" r="10" fill="#FFF6DA"/><circle cx="50" cy="34" r="12" fill="#FFF6DA"/><circle cx="66" cy="40" r="10" fill="#FFF6DA"/><path d="M24 44 L76 44 L67 90 L33 90Z" fill="${B}"/><path d="M38 44 L41 90 M50 44 L50 90 M62 44 L59 90" stroke="${C}" stroke-width="5"/><rect x="31" y="56" width="38" height="20" rx="9" fill="${B}"/>`,50,63,.85,9],
+ bowl:(B,C)=>[`<path d="M30 40 Q52 70 76 34 Z" fill="${C}" opacity=".6"/><path d="M12 52 Q50 104 88 52 Z" fill="${B}"/><ellipse cx="50" cy="52" rx="38" ry="7" fill="${C}" opacity=".5"/>`,50,68,.9,12],
+ apartment:(B,C)=>[`<rect x="22" y="14" width="56" height="76" rx="9" fill="${B}"/>${[22,36].map(y=>[30,45,60].map(x=>`<rect x="${x}" y="${y}" width="10" height="9" rx="2" fill="${C}" opacity=".7"/>`).join("")).join("")}`,50,66,.95,11],
+ falls:(B,C)=>[`<rect x="20" y="18" width="60" height="70" rx="10" fill="${B}"/><path d="M34 18 V60 M46 18 V60 M58 18 V60 M70 18 V52" stroke="${C}" stroke-width="4" stroke-linecap="round" opacity=".6"/><path d="M24 88 Q50 76 76 88" fill="none" stroke="${C}" stroke-width="4" stroke-linecap="round"/>`,50,64,.95,11],
+ phone:(B,C)=>[`<rect x="27" y="12" width="46" height="78" rx="12" fill="${C}"/><rect x="32" y="20" width="36" height="56" rx="6" fill="${B}"/><circle cx="50" cy="83" r="3" fill="${B}"/>`,50,46,.95,9],
+ knot:(B,C)=>[`<circle cx="40" cy="18" r="9" fill="none" stroke="${C}" stroke-width="4"/><circle cx="60" cy="18" r="9" fill="none" stroke="${C}" stroke-width="4"/><circle cx="50" cy="30" r="9" fill="none" stroke="${C}" stroke-width="4"/><ellipse cx="50" cy="64" rx="34" ry="27" fill="${B}"/>`,50,60,1,11],
+ scroll:(B,C)=>[`<rect x="22" y="22" width="56" height="58" rx="4" fill="#FFFBEF"/><rect x="15" y="15" width="70" height="12" rx="6" fill="${C}"/><rect x="15" y="76" width="70" height="12" rx="6" fill="${C}"/><path d="M32 36 H44 M56 36 H68" stroke="${C}" stroke-width="3" stroke-linecap="round" opacity=".5"/>`,50,54,1,11],
+ hand:(B,C)=>[`${[30,40.5,51,61.5].map((x,i)=>`<rect x="${x}" y="${[22,15,15,22][i]}" width="9.5" height="34" rx="4.75" fill="${B}"/>`).join("")}<ellipse cx="24" cy="62" rx="8" ry="14" transform="rotate(-30 24 62)" fill="${B}"/><rect x="28" y="40" width="44" height="48" rx="18" fill="${B}"/>`,50,64,.95,10],
+ tofu:(B,C)=>[`<path d="M24 40 L38 26 L84 26 L70 40Z" fill="#FAF8F0"/><path d="M70 40 L84 26 L84 72 L70 86Z" fill="#E4E0D2"/><rect x="22" y="40" width="50" height="46" rx="6" fill="#FFFFFF"/>`,47,62,1,10],
+ brush:(B,C)=>[`<rect x="44" y="8" width="12" height="42" rx="5" fill="#C9A27A"/><rect x="38" y="46" width="24" height="9" rx="3" fill="${C}"/><path d="M30 55 Q30 84 50 96 Q70 84 70 55Z" fill="${B}"/><path d="M44 90 Q50 100 56 90 Q50 93 44 90Z" fill="${K}"/>`,50,70,.85,9],
+ crystal:(B,C)=>[`<path d="M28 84 L72 84 L64 70 L36 70Z" fill="${C}"/><circle cx="50" cy="46" r="30" fill="${B}"/><path d="M34 34 Q38 24 48 22" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>`,50,48,1,10],
+ umbrella:(B,C)=>[`<path d="M50 52 V82 Q50 92 41 89" fill="none" stroke="${K}" stroke-width="5" stroke-linecap="round"/><path d="M10 54 Q50 0 90 54 Q80 47 70 54 Q60 47 50 54 Q40 47 30 54 Q20 47 10 54Z" fill="${B}"/><path d="M50 10 Q38 30 30 54 M50 10 Q62 30 70 54" fill="none" stroke="${C}" stroke-width="3"/>`,50,38,.85,8],
+ window:(B,C)=>[`<rect x="14" y="20" width="72" height="66" rx="10" fill="${C}"/><rect x="21" y="27" width="26" height="40" rx="4" fill="${B}"/><rect x="53" y="27" width="26" height="40" rx="4" fill="${B}"/>`,50,48,1,16],
+ laundry:(B,C)=>[`<path d="M4 22 Q50 34 96 22" fill="none" stroke="${K}" stroke-width="2.5"/><path d="M30 30 L42 26 Q50 33 58 26 L70 30 L82 44 L71 50 L71 88 L29 88 L29 50 L18 44Z" fill="${B}"/><rect x="38" y="22" width="5" height="11" rx="2" fill="${C}"/><rect x="57" y="22" width="5" height="11" rx="2" fill="${C}"/>`,50,62,.95,10],
+ mic:(B,C)=>[`<rect x="46" y="58" width="8" height="22" fill="${K}"/><rect x="32" y="78" width="36" height="9" rx="4.5" fill="${C}"/><circle cx="50" cy="36" r="25" fill="${B}"/><path d="M30 26 H70 M27 46 H73" stroke="${C}" stroke-width="2.5" opacity=".5"/>`,50,37,.95,10],
+ boxes:(B,C)=>[`<rect x="30" y="10" width="30" height="28" rx="5" transform="rotate(-6 45 24)" fill="${C}" opacity=".55"/><rect x="42" y="30" width="36" height="32" rx="5" transform="rotate(7 60 46)" fill="${C}" opacity=".8"/><rect x="20" y="50" width="44" height="40" rx="7" transform="rotate(-4 42 70)" fill="${B}"/>`,42,70,.85,10],
+ cone:(B,C)=>[`<path d="M32 20 L68 20 L86 88 L14 88Z" fill="${B}" stroke-linejoin="round"/><path d="M26 44 Q50 52 74 44 M20 66 Q50 76 80 66" fill="none" stroke="${C}" stroke-width="3.5" opacity=".6"/><ellipse cx="50" cy="20" rx="18" ry="5" fill="${C}"/>`,50,56,.95,10],
+ letter:(B,C)=>[`<rect x="14" y="28" width="72" height="54" rx="8" fill="${B}"/><path d="M16 32 L50 56 L84 32" fill="none" stroke="${C}" stroke-width="4" stroke-linejoin="round"/><path d="M50 50 C44 42 36 48 50 58 C64 48 56 42 50 50Z" fill="#E8616E"/>`,50,70,.8,12],
+ dome:(B,C)=>[`<path d="M14 78 A36 36 0 0 1 86 78Z" fill="${B}"/><path d="M50 42 V78 M32 47 Q38 62 36 78 M68 47 Q62 62 64 78" fill="none" stroke="${C}" stroke-width="3" opacity=".55"/><rect x="8" y="76" width="84" height="12" rx="5" fill="${C}"/><path d="M28 56 Q32 48 40 46" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>`,50,62,.9,11],
+ note:(B,C)=>[`<rect x="56" y="12" width="8" height="60" rx="3" fill="${K}"/><path d="M64 12 Q84 22 80 44 Q76 30 64 28Z" fill="${C}"/><ellipse cx="40" cy="70" rx="24" ry="18" transform="rotate(-18 40 70)" fill="${B}"/>`,39,70,.8,9],
+ newspaper:(B,C)=>[`<rect x="16" y="14" width="68" height="76" rx="5" fill="#FFFFFF"/><rect x="23" y="21" width="54" height="13" rx="2" fill="${C}"/><path d="M24 42 H76 M24 82 H76" stroke="${K}" stroke-width="2" opacity=".35"/>`,50,62,1,12],
+ frame:(B,C)=>[`<rect x="12" y="16" width="76" height="68" rx="5" fill="${C}"/><rect x="20" y="24" width="60" height="52" rx="2" fill="${B}"/><path d="M24 72 L34 58 L42 72Z" fill="${C}" opacity=".5"/><circle cx="71" cy="33" r="5" fill="${C}" opacity=".5"/>`,50,50,.95,11],
+ person:(B,C)=>[`<path d="M24 96 Q24 66 50 66 Q76 66 76 96Z" fill="${C}"/><circle cx="50" cy="40" r="27" fill="#FFE3CF"/><path d="M23 40 Q22 10 50 11 Q80 10 77 40 Q70 26 54 24 Q46 32 30 32 Q25 34 23 40Z" fill="${K}"/><rect x="74" y="50" width="6" height="34" rx="3" transform="rotate(20 77 67)" fill="#C9A27A"/>`,50,46,1,11],
+ pole:(B,C)=>[`<rect x="44" y="6" width="12" height="86" rx="3" fill="#B9B2A4"/><rect x="22" y="16" width="56" height="7" rx="3" fill="#8F877A"/><path d="M2 30 Q24 24 22 19 M98 30 Q76 24 78 19" fill="none" stroke="${K}" stroke-width="1.6"/><rect x="26" y="38" width="48" height="40" rx="5" fill="${B}"/>`,50,58,.9,10],
+ mikan:(B,C)=>[`<circle cx="50" cy="56" r="34" fill="#FFB547"/><path d="M50 22 Q46 12 50 8" fill="none" stroke="#5B8A3C" stroke-width="3"/><path d="M50 18 Q62 4 74 12 Q64 22 50 18Z" fill="#6DB45A"/><path d="M30 44 Q34 36 42 34" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity=".8"/>`,50,58,1,11],
+ blob:(B,C)=>[`<path d="M18 70 Q14 30 50 26 Q86 30 82 70 Q82 90 50 90 Q18 90 18 70Z" fill="${B}"/>`,50,58,1,11],
+};
+const ACC={
+ fire:C=>`<path d="M84 4 Q96 16 90 24 Q86 30 80 26 Q74 20 80 14 Q80 20 84 18 Q86 12 84 4Z" fill="${C}"/>`,
+ water:C=>`<path d="M86 4 Q96 18 92 24 Q86 30 80 24 Q78 18 86 4Z" fill="${C}"/><circle cx="84" cy="21" r="1.8" fill="#fff"/>`,
+ wind:C=>`<path d="M86 28 V18" stroke="#3E7A50" stroke-width="2.4" stroke-linecap="round"/><path d="M86 19 Q76 8 80 4 Q90 6 86 19Z M86 19 Q96 10 97 14 Q96 22 86 19Z" fill="${C}"/>`,
+ s:C=>`<path d="M86 4 L89 12 L97 15 L89 18 L86 26 L83 18 L75 15 L83 12Z" fill="${C}"/>`,
+ t:C=>`<circle cx="86" cy="14" r="10" fill="${C}"/><path d="M86 8 V15" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="86" cy="20" r="1.8" fill="#fff"/>`,
+};
+const ARTC=new Map();
+function art(c){
+  if(ARTC.has(c.n))return ARTC.get(c.n);
+  const key=c.t==="m"?c.a:c.t,[B,C]=PAL[key],h=hashStr(c.n);
+  const [body,fx,fy,fs,fg]=(SH[PIC[c.n]]||SH.blob)(B,C);
+  const svg=`<svg viewBox="0 0 100 100" aria-hidden="true"><ellipse cx="50" cy="93" rx="30" ry="4" fill="${K}" opacity=".12"/><g stroke="${K}" stroke-width="3" stroke-linejoin="round">${body}</g>${face(fx,fy,fs,fg,h)}${ACC[key](C)}</svg>`;
+  ARTC.set(c.n,svg);return svg;
+}
 function cardHtml(c,o={}){
   const cls=["card",c.t==="s"?"spell":c.t==="t"?"trap":c.a,...(o.cls||[])];
   if(o.atk>c.atk)cls.push("boost");
   const ft=c.t==="m"?`<span class="at">${ATTR[c.a]}</span><span>攻 ${o.atk??c.atk}</span>`:c.t==="t"?`<span class="at" style="flex:1;font-size:.85em;white-space:nowrap;overflow:hidden">${TRIG[c.e]}</span>`:`<span class="at">${TYPE[c.t]}</span><span></span>`;
   if(c.rare)cls.push("rare-"+c.rare);
   const ab=ABIL(c).map(a=>a[0][0]).join("");
-  return `<div class="${cls.join(" ")}">${c.rare?`<span class="rr r-${c.rare}">${c.rare}</span>`:""}${c.star?'<span class="st">★</span>':""}${ab?`<span class="abx">${ab}</span>`:""}<span class="nm">${esc(c.n)}</span><span class="gl">${c.g}</span><span class="ft">${ft}</span></div>`;
+  return `<div class="${cls.join(" ")}">${c.rare?`<span class="rr r-${c.rare}">${c.rare}</span>`:""}${c.star?'<span class="st">★</span>':""}${ab?`<span class="abx">${ab}</span>`:""}<span class="nm">${esc(c.n)}</span><span class="art">${art(c)}</span><span class="ft">${ft}</span></div>`;
 }
 function abHtml(c){const a=ABIL(c);return a.length?"<br>"+a.map(x=>`<b class=\"abt\">${x[0]}</b> ${x[1]}`).join("<br>"):""}
 function myTurn(){return !!mode&&!!cur&&!animating&&!queue.length&&cur.act===my&&!cur.over}
@@ -621,7 +792,7 @@ function render(s){
   const G=guide(s),lpCls=sd=>"lp"+(s.lp[sd]<=2000?" low":"");
   app.innerHTML=`<div class="stage" id="stage">
     <div class="guide ${G.c||""}">${G.n?`<span class="n">${G.n}</span>`:""}<span>${G.t}</span></div>
-    <div class="bar"><span class="who">${NM(th)}</span><span class="meta">手札 ${s.hand[th].length} · 山 ${s.deck[th].length}</span><span class="${lpCls(th)}" data-lp="${th}"><small>命</small><span class="num">${Math.max(0,s.lp[th])}</span></span></div>
+    <div class="bar"><span class="who">${NM(th)}</span><span class="meta">手札 ${s.hand[th].length} · 山 ${s.deck[th].length}</span><span class="shs" data-sh="${th}" title="盾">${s.shield[th].length?[...Array(s.shield[th].length)].map(()=>"<i></i>").join(""):"<em>盾なし</em>"}</span><span class="${lpCls(th)}" data-lp="${th}"><small>命</small><span class="num">${Math.max(0,s.lp[th])}</span></span></div>
     <div class="field">
       <div class="trow">${trapZone(th,0)}${trapZone(th,1)}</div>
       <div class="mrow">${[0,1,2].map(i=>monZone(th,i)).join("")}</div>
@@ -629,7 +800,7 @@ function render(s){
       <div class="mrow">${[0,1,2].map(i=>monZone(me,i)).join("")}</div>
       <div class="trow" style="padding-bottom:14px">${trapZone(me,0)}${trapZone(me,1)}</div>
     </div>
-    <div class="bar"><span class="who">あなた</span><span class="meta">山 ${s.deck[me].length}</span><span class="${lpCls(me)}" data-lp="${me}"><small>命</small><span class="num">${Math.max(0,s.lp[me])}</span></span></div>
+    <div class="bar"><span class="who">あなた</span><span class="meta">山 ${s.deck[me].length}</span><span class="shs" data-sh="${me}" title="盾">${s.shield[me].length?[...Array(s.shield[me].length)].map(()=>"<i></i>").join(""):"<em>盾なし</em>"}</span><span class="${lpCls(me)}" data-lp="${me}"><small>命</small><span class="num">${Math.max(0,s.lp[me])}</span></span></div>
     <div class="hand" aria-label="手札">${hand||'<span class="hint" style="align-self:center">手札がありません</span>'}</div>
     ${actionPanel(s,live,idle)}
     ${logPanel()}
@@ -658,7 +829,8 @@ function onTap(d){
 function actionPanel(s,live,idle){
   if(s.over){
     const r=(s.over==="draw"?"引き分け":s.over===my?"あなたの勝ち":"あなたの負け")+(s.surr?`（${s.surr===my?"降参":"相手が降参"}）`:"");
-    return `<div class="panel"><p class="res">${r}</p><p class="hint">命 ${Math.max(0,s.lp[my])} 対 ${Math.max(0,s.lp[opp(my)])}</p><div class="row"><button id="again">もう一戦</button><button id="lobby" class="ghost">はじめの画面へ</button></div></div>`;
+    const gift=mode==="cpu"&&s.over===my&&winGift!=null?`<div class="sheet">${cardHtml(CARDS[winGift])}<div class="tx"><b>勝利のごほうび</b><span><span class="rr r-${CARDS[winGift].rare}" style="position:static;display:inline-block">${CARDS[winGift].rare}</span> 「${esc(CARDS[winGift].n)}」を手に入れた。デッキに入れられます。</span><span class="hint">${esc(CARDS[winGift].f||"")}</span></div></div>`:mode==="cpu"&&s.over===my&&LV[cpuLv()].r?`<p class="hint">「${LV[cpuLv()].n}」でもらえるカードは、もう全部持っています。</p>`:"";
+    return `<div class="panel"><p class="res">${r}</p><p class="hint">命 ${Math.max(0,s.lp[my])} 対 ${Math.max(0,s.lp[opp(my)])}${mode==="cpu"?`（夜の主：${LV[cpuLv()].n}）`:""}</p>${gift}<div class="row"><button id="again">もう一戦</button><button id="lobby" class="ghost">はじめの画面へ</button></div></div>`;
   }
   if(!idle)return "";
   let body="",btns="";
@@ -677,8 +849,8 @@ function actionPanel(s,live,idle){
         return `<li>「${esc(cd.n)}」：あなた ${ea} 対 相手 ${ed}${note} → <b style="color:var(${ea>ed?"--wind":ea<ed?"--bad":"--mute"})">${ea>ed?"勝てる":ea<ed?"負ける":"相打ち"}</b></li>`}).join("");
       body=`<p style="margin:0">「${esc(c.n)}」（攻撃力 ${m.atk}）で、どれを攻撃しますか？</p><ul class="rules" style="margin:0">${lines}</ul><p class="hint">負けた作品は倒れ、攻撃力の差だけ命が減ります。${s.trap[opp(my)].some(Boolean)?"相手は罠を伏せています。止められるかもしれません。":""}</p>`;
     }
-    else body=`<p style="margin:0">相手の場に作品がいません。<br>「${esc(c.n)}」で相手の命を直接攻撃できます。</p>`;
-    btns=`<div class="row">${hasMon(s,opp(my))?"":`<button id="doDirect" class="danger">ダイレクトアタック（${m.atk}）</button>`}<button id="doCancel" class="ghost">やめる</button></div>`;
+    else body=s.shield[opp(my)].length?`<p style="margin:0">相手の場に作品がいません。<br>「${esc(c.n)}」で相手の盾を 1 枚割れます（のこり ${s.shield[opp(my)].length} 枚）。</p><p class="hint" style="margin:0">割れた盾は相手の手札に入ります。S・トリガーの札なら、相手はそれをただで使えます。</p>`:`<p style="margin:0">相手の盾はもうありません。<br>「${esc(c.n)}」で相手の命を直接攻撃できます。</p>`;
+    btns=`<div class="row">${hasMon(s,opp(my))?"":`<button id="doDirect" class="danger">${s.shield[opp(my)].length?`ダイレクトアタック（盾を 1 枚割る）`:`ダイレクトアタック（${m.atk}）`}</button>`}<button id="doCancel" class="ghost">やめる</button></div>`;
   }else if(sel&&sel.kind==="info"&&s.mon[sel.side][sel.slot]){
     const m=s.mon[sel.side][sel.slot],c=card(s,m.id);
     body=`<div class="sheet">${cardHtml(c,{atk:m.atk})}<div class="tx"><b>${esc(c.n)}</b><span>${NM(sel.side)}の作品・${ATTR[c.a]}・攻撃力 ${m.atk}${abHtml(c)}${m.done?"<br>このターンはもう攻撃しました。":""}${sel.side===my&&live&&s.turn===1?"<br>最初のターンは攻撃できません。":""}</span></div></div>`;
@@ -725,7 +897,10 @@ function lobby(){
       <div class="row" style="font-size:14px"><span>正解 <b class="count">${solvedN()}</b> / ${QUIZ.length} 問</span><span class="meta">${PER} 問正解するごとにカード 1 枚</span></div>
       <button id="toQuiz" ${solvedN()>=QUIZ.length?"class=\"ghost\"":""}>${solvedN()>=QUIZ.length?"全問正解しました":"問題に挑む"}</button></div>
     <div class="panel hl"><h2>恋人や友だちと、1 台で対戦する</h2><p class="hint">いちばん確実な遊び方です。ネットも、アカウントも、招待もいりません。自分のターンが終わったら、スマホを相手に渡すだけ。渡すたびに目かくしの画面が出ます。</p><button id="local">1 台で対戦をはじめる</button></div>
-    <div class="panel"><h2>コンピュータと戦う</h2><p class="hint">説明書はいりません。画面の上の案内どおりにタップしていけば遊べます。</p><button id="cpu">はじめる</button></div>
+    <div class="panel"><h2>コンピュータと戦う</h2><p class="hint">説明書はいりません。画面の上の案内どおりにタップしていけば遊べます。</p>
+      <div class="lvrow" role="radiogroup" aria-label="夜の主の強さ">${LV.map((l,i)=>`<button class="lv${i===cpuLv()?" on":""}" data-lv="${i}" role="radio" aria-checked="${i===cpuLv()}">${l.n}</button>`).join("")}</div>
+      <p class="hint" style="margin:0">${LV[cpuLv()].d}。${LV[cpuLv()].r?`勝つと ${LV[cpuLv()].r} のカードを 1 枚もらえる（まだ持っていないものから）。`:"勝ってもカードはもらえません。"}</p>
+      <button id="cpu">「${LV[cpuLv()].n}」ではじめる</button></div>
     <div class="panel"><h2>オンラインで対戦する</h2>
       <div><label for="code">部屋の番号（二人で同じものを入れる）</label><input type="text" id="code" inputmode="numeric" maxlength="12" value="${esc(draft.code)}"></div>
       <p class="hint" style="color:var(--ink)">番号を入れて「部屋に入る」を押すだけ。先攻・後攻は自動でランダムに決まります。</p>
@@ -737,16 +912,19 @@ function lobby(){
         <li>命は 8000。相手の命を 0 にしたら勝ち。</li>
         <li>自分のターンにできること：作品を 1 つ出す（1 ターン 1 回）、言葉を使う、罠を伏せる、作品で攻撃する（1 つ 1 回）。順番は自由。</li>
         <li>攻撃：相手の作品と戦うと、攻撃力の低いほうが倒れ、差の分だけ命が減る。</li>
-        <li>ダイレクトアタック：相手の場に作品がいないときは、相手の命を直接攻撃できる。ダイレクトアタックを受けた人は、山札から 1 枚引ける。</li>
+        <li>盾（シールド）：はじめに山札から 5 枚が裏向きの盾になる。相手の場に作品がいないときのダイレクトアタックは、まず盾を 1 枚割る。割れた盾は持ち主の手札に入る。</li>
+        <li>S・トリガー：盾から手札に来た札に「S」の印があれば、ただで発動する（言葉はその場で効き、罠はそのまま伏せられる）。</li>
+        <li>盾がなくなってからのダイレクトアタックは、相手の命を直接けずる。</li>
         <li>★の作品は、自分の場のいちばん弱い作品と入れかわりで出る（生け贄）。</li>
         <li>罠は伏せておくだけ。条件がそろうと自動で発動する。いつ発動するかは、伏せた罠の下の紫のラベルに書いてある。</li>
-        <li>相性：水は炎に、炎は風に、風は水に強い。有利なら戦いのときだけ攻撃力 +500。</li>
+        <li>相性：水は炎に、炎は草に、草は水に強い。有利なら戦いのときだけ攻撃力 +500。</li>
         <li>一発逆転の賭け：自分の命が 2000 以下で、相手と 3000 以上の差があるときだけ、1 試合に 1 回使える。確率は半々で、表なら命が入れかわり、裏ならその場で負け。</li>
         <li>降参（サレンダー）：自分のターンなら、いつでも「降参する」を押して負けを認められる。</li>
         <li>先攻・後攻はランダムで決まる。最初のターンは攻撃できない。ターンのはじめに 1 枚引く。</li>
       </ol></details>
   </div>`;
   document.getElementById("cpu").addEventListener("click",startCpu);
+  app.querySelectorAll("[data-lv]").forEach(b=>b.addEventListener("click",()=>{save.lvl=+b.dataset.lv;persist();render()}));
   document.getElementById("local").addEventListener("click",startLocal);
   document.getElementById("toDeck").addEventListener("click",()=>{draftDeck=myDeck();peek=null;screen="deck";render()});
   document.getElementById("toQuiz").addEventListener("click",()=>{quizState=null;screen="quiz";render()});
@@ -864,7 +1042,8 @@ function shards(r,col){const n=RM?8:46,wc=css("--washi");for(let i=0;i<n;i++){co
   parts.push({x,y,vx:(x-mx)*.12+(Math.random()-.5)*4,vy:(y-my2)*.1-3-Math.random()*4,g:.35,life:55+Math.random()*20,max:75,col:Math.random()<.5?col:wc,size:5+Math.random()*8,rot:Math.random()*6,vr:(Math.random()-.5)*.4,sq:1})}loop()}
 const sleep=ms=>new Promise(r=>setTimeout(r,RM?Math.min(ms,250):ms));
 const Z=q=>document.querySelector(`[data-z="${q}"]`);
-const LPel=sd=>document.querySelector(`[data-lp="${sd}"]`);
+const LPel=sd=>document.querySelector(`[data-lp="${sd}"]`),SHel=sd=>document.querySelector(`[data-sh="${sd}"]`)||LPel(sd);
+const EFN={arrow:"相手の命を 1200 減らす",heal:"自分の命を 1200 ふやす",bolt:"相手のいちばん強い作品を倒す",draw:"2 枚引く",buffall:"自分の作品すべて +400",weaken:"相手の作品すべて -400",halve:"相手のいちばん強い作品の攻撃力を半分",revive:"倒れた作品がよみがえる"};
 const ctr=el=>{const r=el.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2,r}};
 function shake(px){const st=document.getElementById("stage");if(!st||RM)return;const k=[];for(let i=0;i<7;i++)k.push({transform:`translate(${(Math.random()-.5)*px*2}px,${(Math.random()-.5)*px*2}px)`});k.push({transform:"none"});st.animate(k,{duration:380,easing:"ease-out"})}
 function flash(col,a=.45){const d=document.createElement("div");d.className="flash";d.style.background=col;document.body.appendChild(d);d.animate([{opacity:a},{opacity:0}],{duration:420,easing:"ease-out"}).onfinish=()=>d.remove()}
@@ -894,7 +1073,7 @@ function evText(ev,prev){
     case "attack":{const a=prev.mon[ev.side][ev.from];const an=a?cn(a.id):"作品";
       if(ev.to<0)return {t:`${X}の${an}がダイレクトアタック`};const d=prev.mon[opp(ev.side)][ev.to];return {t:`${X}の${an}が${d?cn(d.id):"作品"}を攻撃`}}
     case "clash":{const ca=card(s,ev.ia),cd=card(s,ev.id2);
-      const ba=ev.ea>ev.ba?`${ev.ba}＋相性500`:`${ev.ba}`,bd=ev.ed>ev.bd?`${ev.bd}＋相性500`:`${ev.bd}`;
+      const ba=ev.xa?`${ev.ba}（天敵）`:ev.ea>ev.ba?`${ev.ba}＋相性500`:`${ev.ba}`,bd=ev.xd?`${ev.bd}（天敵）`:ev.ed>ev.bd?`${ev.bd}＋相性500`:`${ev.bd}`;
       const r=ev.ea>ev.ed?`${ev.ea-ev.ed} の差で${X}の勝ち`:ev.ea<ev.ed?`${ev.ed-ev.ea} の差で${X}の負け`:"同じ数なので相打ち";
       return {t:`戦い：「${ca.n}」${ba}＝${ev.ea} 対 「${cd.n}」${bd}＝${ev.ed} → ${r}`,c:"b"}}
     case "destroy":return {t:`${NM(ev.side)}の${cn(ev.id)}が倒れた`};
@@ -905,8 +1084,21 @@ function evText(ev,prev){
     case "fizzle":return {t:"効く相手がいなかった"};
     case "trapbreak":return {t:`${NM(ev.side)}の伏せていた罠${cn(ev.id)}が壊された`,c:"tr"};
     case "buffall":return {t:`${X}の場の作品すべての攻撃力が ${ev.amt||300} 上がった`};
-    case "draw":return ev.why==="direct"?{t:`${NM(ev.side)}はダイレクトアタックを受けたので 1 枚引いた`}:null;
+    case "draw":return ev.why==="pay"?{t:`${NM(ev.side)}が歩合で 1 枚引いた`}:null;
     case "surrender":return {t:`${X}が降参した`,c:"d"};
+    case "ability":return {t:`${X}の${cn(ev.id)}の効果：${card(s,ev.id).od}`};
+    case "shield":return {t:`${NM(ev.side)}の盾が割れた（のこり ${ev.left} 枚）`,c:"d"};
+    case "strigger":return {t:`S・トリガー！ ${NM(ev.side)}の${cn(ev.id)}がただで発動`,c:"tr"};
+    case "shieldhand":return {t:`割れた盾は${NM(ev.side)}の手札に入った`};
+    case "shieldadd":return {t:`${NM(ev.side)}の盾が ${ev.n} 枚ふえた`};
+    case "weaken":return {t:`${NM(ev.side)}の作品すべての攻撃力が ${ev.amt} 下がった`};
+    case "halve":return {t:`${NM(ev.side)}の作品の攻撃力が半分になった（-${ev.amt}）`};
+    case "revive":case "revivehand":return {t:`${NM(ev.side)}の${cn(ev.id)}がよみがえった${ev.k==="revivehand"?"（手札へ）":""}`};
+    case "tutor":return {t:`${NM(ev.side)}が山札から${ev.side===my?cn(ev.id):"作品"}を手札に加えた`};
+    case "discard":return {t:`${NM(ev.side)}が手札を ${ev.n} 枚すべて捨てた`};
+    case "error":return {t:`エラー発生！ 出た効果：${EFN[ev.e]}`,c:"tr"};
+    case "recorded":return {t:`ログに残った${cn(ev.id)}が${NM(ev.side)}の手札にもどった`,c:"tr"};
+    case "joke":return {t:`「${ev.id}」が笑いに変えた：${NM(ev.side)}の命が ${ev.amt} ふえた`,c:"h"};
     case "gamble":return {t:`${X}が一発逆転の賭けに出た → ${ev.ok?"成功！":"失敗…"}`,c:"tr"};
     case "swap":return {t:`命が入れかわった（${NM(ev.side)} ${ev.a} ／ ${NM(opp(ev.side))} ${ev.b}）`,c:"h"};
     case "over":return {t:ev.win==="draw"?"引き分け":`${NM(ev.win)}の勝ち`,c:"h"};
@@ -918,7 +1110,7 @@ async function fx(ev){
   {const l=evText(ev,prev);if(l){logLines.push(l);if(logLines.length>60)logLines.shift()}}
   switch(ev.k){
     case "turn": render(s);await banner(sd===my?"あなたのターン":NM(sd)+"のターン",`第${s.turn}ターン`,sd===my?"--gold":"--bad",550);break;
-    case "draw":{if(ev.why==="direct")await banner(`${NM(sd)}が 1 枚引く`,"ダイレクトアタックを受けたので","--wind",500);render(s);if(sd===my){const cs=[...document.querySelectorAll(".hand .zone")].slice(-ev.n);
+    case "draw":{if(ev.why==="pay")await banner("歩合",`${NM(sd)}が 1 枚引く`,"--fire",450);render(s);if(sd===my){const cs=[...document.querySelectorAll(".hand .zone")].slice(-ev.n);
       cs.forEach((c,i)=>c.animate([{transform:"translate(160px,-60px) rotate(25deg)",opacity:0},{transform:"none",opacity:1}],{duration:RM?1:420,delay:i*140,easing:"cubic-bezier(.2,.9,.3,1)",fill:"backwards"}));await sleep(420+ev.n*140)}else await sleep(200);break}
     case "tribute":{render(prev);const el=Z(`${sd}m${ev.slot}`);if(el){const {r}=ctr(el);shards(r,css("--gold"));float(el,"生け贄","--gold",26);el.animate([{opacity:1},{opacity:0,transform:"scale(.4) rotate(12deg)"}],{duration:RM?1:380,fill:"forwards"})}
       await sleep(420);render(s);break}
@@ -935,7 +1127,7 @@ async function fx(ev){
     case "heal":{render(s);const el=LPel(sd);if(el){const p=ctr(el);burst(p.x,p.y,css("--wind"),40,4);float(el,"+"+ev.amt,"--wind")}countLP(sd,prev.lp[sd],s.lp[sd]);await sleep(700);break}
     case "trapbreak":{render(prev);const el=Z(`${sd}t${ev.slot}`);if(el){const {r}=ctr(el);shards(r,COL("trap"));el.animate([{opacity:1},{opacity:0,transform:"scale(.3) rotate(-20deg)"}],{duration:RM?1:420,fill:"forwards"});float(el,"罠を破壊","--trap",24)}await sleep(500);render(s);break}
     case "buffall":{render(s);document.querySelectorAll(`[data-z^="${sd}m"]`).forEach(el=>{if(!el.querySelector(".card"))return;el.animate([{transform:"scale(1.2)",filter:"brightness(1.8)"},{transform:"none",filter:"none"}],{duration:600});const p=ctr(el);ring(p.x,p.y,css("--gold"),5,5);float(el,"+"+(ev.amt||300),"--gold",26)});await sleep(700);break}
-    case "buff":{render(s);const el=Z(`${sd}m${ev.slot}`);if(el){el.animate([{transform:"scale(1.25)",filter:"brightness(1.8)"},{transform:"none",filter:"none"}],{duration:600});const p=ctr(el);ring(p.x,p.y,css("--gold"),5,5);float(el,"+500","--gold",30)}await sleep(650);break}
+    case "buff":{render(s);const el=Z(`${sd}m${ev.slot}`);if(el){el.animate([{transform:"scale(1.25)",filter:"brightness(1.8)"},{transform:"none",filter:"none"}],{duration:600});const p=ctr(el);ring(p.x,p.y,css("--gold"),5,5);float(el,"+"+(ev.amt||500),"--gold",30)}await sleep(650);break}
     case "trap":{render(prev);const el=Z(`${sd}t${ev.slot}`),c=card(s,ev.id);
       if(el){el.style.zIndex=6;el.animate([{transform:"rotateY(0)"},{transform:"rotateY(90deg) scale(1.6)"},{transform:"rotateY(0) scale(1)"}],{duration:RM?1:380});const p=ctr(el);ring(p.x,p.y,COL("trap"),10,10)}
       flash(COL("trap"),.5);shake(10);await banner(`${NM(sd)}の罠発動！`,"「"+c.n+"」\n"+c.d,"--trap",1300);render(s);break}
@@ -948,8 +1140,8 @@ async function fx(ev){
     case "negate":{render(s);await banner(ev.what==="spell"?"言葉は打ち消された":"攻撃は止められた","","--trap",450);break}
     case "clash":{render(prev);const a=Z(`${sd}m${ev.from}`),t=Z(`${opp(sd)}m${ev.to}`);float(a,String(ev.ea),ev.ea>=ev.ed?"--gold":"--mute",32);float(t,String(ev.ed),ev.ed>=ev.ea?"--gold":"--mute",32);
       const ca=card(s,ev.ia),cd=card(s,ev.id2),A=NM(sd),D=NM(opp(sd));
-      const la=`${A}「${ca.n}」 ${ev.ba}${ev.ea>ev.ba?` ＋500（${ATTR[ca.a]}は${ATTR[cd.a]}に強い）`:""} ＝ ${ev.ea}`;
-      const ld=`${D}「${cd.n}」 ${ev.bd}${ev.ed>ev.bd?` ＋500（${ATTR[cd.a]}は${ATTR[ca.a]}に強い）`:""} ＝ ${ev.ed}`;
+      const la=`${A}「${ca.n}」 ${ev.ba}${ev.xa?`（「${cd.n}」にだけは最強）`:ev.ea>ev.ba?` ＋500（${ATTR[ca.a]}は${ATTR[cd.a]}に強い）`:""} ＝ ${ev.ea}`;
+      const ld=`${D}「${cd.n}」 ${ev.bd}${ev.xd?`（「${ca.n}」にだけは最強）`:ev.ed>ev.bd?` ＋500（${ATTR[cd.a]}は${ATTR[ca.a]}に強い）`:""} ＝ ${ev.ed}`;
       const res=ev.ea>ev.ed?`${ev.ea-ev.ed} の差で「${cd.n}」が倒れる`:ev.ea<ev.ed?`${ev.ed-ev.ea} の差で「${ca.n}」が倒れる`:"同じ数なので両方倒れる";
       await banner(res,la+"\n"+ld,ev.ea===ev.ed?"--mute":((ev.ea>ev.ed)===(sd===my))?"--gold":"--bad",1500);break}
     case "destroy":{render(prev);const el=Z(`${sd}m${ev.slot}`),c=card(prev,ev.id);
@@ -958,6 +1150,19 @@ async function fx(ev){
     case "damage":{render(s);const el=LPel(sd);countLP(sd,prev.lp[sd],s.lp[sd]);float(el,"-"+ev.amt,"--bad",ev.amt>=2000?56:44);
       if(el){const p=ctr(el);burst(p.x,p.y,css("--bad"),Math.min(90,20+ev.amt/40),8)}
       shake(Math.min(20,4+ev.amt/150));if(sd===my)flash(css("--bad"),Math.min(.5,.15+ev.amt/8000));await sleep(800);break}
+    case "ability":{render(s);const el=Z(`${sd}m${ev.slot}`);if(el){const p=ctr(el);ring(p.x,p.y,css("--gold"),6,6)}await banner("出たとき",card(s,ev.id).n+"\n"+card(s,ev.id).od,"--gold",650);break}
+    case "shield":{render(prev);const el=SHel(sd);if(el){const p=ctr(el);burst(p.x,p.y,css("--water"),60,9);ring(p.x,p.y,"#fff",8,8)}shake(12);flash("#9fd0ff",.3);await banner("盾をブレイク",`${NM(sd)}の盾 のこり ${ev.left} 枚`,"--water",650);render(s);break}
+    case "strigger":{render(s);flash(COL("trap"),.5);shake(10);await banner("S・トリガー！",`${NM(sd)}の「${card(s,ev.id).n}」がただで発動`,"--trap",1000);break}
+    case "shieldadd":{render(s);const el=SHel(sd);if(el){const p=ctr(el);ring(p.x,p.y,css("--water"),6,6)}await banner("盾が増えた",`${NM(sd)}の盾 +${ev.n}`,"--water",550);break}
+    case "weaken":{render(s);document.querySelectorAll(`[data-z^="${sd}m"]`).forEach(el=>{if(!el.querySelector(".card"))return;float(el,"-"+ev.amt,"--bad",26)});shake(6);await sleep(650);break}
+    case "halve":{render(s);const el=Z(`${sd}m${ev.slot}`);if(el)float(el,"半分","--bad",30);shake(8);await sleep(650);break}
+    case "revive":case "revivehand":{render(s);const el=ev.k==="revive"?Z(`${sd}m${ev.slot}`):null;if(el){el.animate([{opacity:0,transform:"translateY(30px)"},{opacity:1,transform:"none"}],{duration:RM?1:500});const p=ctr(el);ring(p.x,p.y,css("--gold"),7,7)}await banner("よみがえり",card(s,ev.id).n,"--gold",550);break}
+    case "tutor":{render(s);await banner("祈り",sd===my?`「${card(s,ev.id).n}」を手札へ`:"山札から作品を手札へ","--gold",550);break}
+    case "discard":{render(s);shake(8);await banner("消尽",`手札を ${ev.n} 枚使い果たす`,"--bad",600);break}
+    case "error":{render(s);flash("#fff",.4);shake(12);await banner("エラー",`出た効果：${EFN[ev.e]}`,"--trap",800);break}
+    case "recorded":{render(s);await banner("ログに残った",`「${card(s,ev.id).n}」が手札にもどる`,"--trap",650);break}
+    case "joke":{render(s);const el=LPel(sd);if(el)float(el,"+"+ev.amt,"--wind",40);countLP(sd,prev.lp[sd],s.lp[sd]);await banner("笑いに変えた",`「${ev.id}」のネタで命が ${ev.amt} ふえた`,"--fire",800);break}
+    case "shieldhand":render(s);break;
     case "gamble":{render(prev);flash(COL("trap"),.45);shake(10);
       await banner(`${NM(sd)}が一発逆転の賭け`,"表なら命が入れかわる。裏なら負け。","--trap",1200);
       await banner("…","","--mute",700);
