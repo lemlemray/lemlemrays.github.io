@@ -69,6 +69,16 @@ button:focus-visible,.zone:focus-visible,input:focus-visible{outline:2px solid v
 .card .nm{font-size:calc(var(--cw)*.115);font-weight:800;line-height:1.2;min-height:2.4em;display:flex;align-items:center}
 .shs{display:inline-flex;gap:2px;align-items:center}.shs i{width:9px;height:12px;border-radius:2px 2px 5px 5px;background:var(--water);box-shadow:inset 0 0 0 1px #fff6;display:block}.shs em{font-style:normal;font-size:11px;color:var(--bad)}
 .lk .card{filter:grayscale(.85) brightness(.7)}.lk{cursor:pointer}
+.crack{position:fixed;width:120px;height:120px;z-index:58;pointer-events:none}.crack svg{width:100%;height:100%;overflow:visible}.crack path{fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;filter:drop-shadow(0 0 4px #9fd0ff)}
+.slash{position:fixed;left:0;right:0;height:4px;margin-top:-2px;z-index:57;pointer-events:none;transform-origin:left center;background:linear-gradient(90deg,transparent,#fff,#9fd0ff,#fff,transparent);box-shadow:0 0 18px #9fd0ff}
+.stov{position:fixed;inset:0;z-index:70;pointer-events:none;background:radial-gradient(circle at 50% 42%,rgba(176,80,126,.35),rgba(10,8,14,.88) 62%);overflow:hidden}
+.stov .rays{position:absolute;left:50%;top:42%;width:170vmax;height:170vmax;background:repeating-conic-gradient(from 0deg,rgba(212,175,82,.0) 0deg 8deg,rgba(212,175,82,.28) 8deg 12deg,rgba(176,80,126,.0) 12deg 20deg,rgba(176,80,126,.3) 20deg 23deg);-webkit-mask:radial-gradient(circle,#000 0 18%,transparent 60%);mask:radial-gradient(circle,#000 0 18%,transparent 60%)}
+.stov .stcard{position:absolute;left:50%;top:42%;--cw:84px;transform-style:preserve-3d}
+.stov .stcard .card{position:relative}
+.stov .sttxt{position:absolute;left:0;right:0;top:calc(42% + 130px);text-align:center;font-family:var(--f-card);font-weight:800;font-size:clamp(34px,11vw,56px);letter-spacing:.04em;color:#fff;text-shadow:0 0 8px var(--trap),0 0 22px var(--trap),0 0 40px var(--gold)}
+.stov .sttxt span{display:inline-block}
+.stov .stsub{position:absolute;left:16px;right:16px;top:calc(42% + 200px);text-align:center;color:var(--gold);font-weight:700;font-size:15px}
+.stov .bolts{position:absolute;inset:0;width:100%;height:100%}.stov .bolts path{fill:none;stroke:#fff;stroke-width:.5;vector-effect:non-scaling-stroke;stroke-width:3px;filter:drop-shadow(0 0 6px #e7a6ff)}
 .lvrow{display:flex;gap:6px}.lvrow .lv{flex:1;padding:8px 2px;font-size:13px;background:transparent;color:var(--ink);border:1px solid var(--rim)}.lvrow .lv.on{background:var(--gold);color:var(--sumi);border-color:var(--gold);font-weight:800}
 .card .art{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}.card .art svg{width:100%;height:100%;overflow:visible}
 .card .ft{display:flex;justify-content:space-between;align-items:center;width:100%;font-family:var(--f-body);font-size:calc(var(--cw)*.12);font-weight:700;font-variant-numeric:tabular-nums}
@@ -167,48 +177,48 @@ const ATTR={fire:"炎",water:"水",wind:"草"};
 const BEATS={water:"fire",fire:"wind",wind:"water"};
 const CARDS=[
  // ---- はじめから持っている札（0-25）。効果は、それぞれの経験から ----
- {n:"電柱の詩路",g:"詩",t:"m",a:"fire",atk:1000,on:"arrow",ov:300,od:"相手の命を 300 減らす",f:"街の電柱に、手書きの詩をかかげる企画。道ゆく人の胸に、ちくりと刺さる。"},
- {n:"大蛙美術館",g:"蛙",t:"m",a:"fire",atk:1300,on:"draw",ov:1,od:"山札から 1 枚引く",f:"樹冠ごとに作家を分けて展示する、バーチャル美術館。開くたびに新しい作家を招く。"},
+ {n:"電柱の詩路",st:1,g:"詩",t:"m",a:"fire",atk:1000,on:"arrow",ov:300,od:"相手の命を 300 減らす",f:"街の電柱に、手書きの詩をかかげる企画。道ゆく人の胸に、ちくりと刺さる。"},
+ {n:"大蛙美術館",st:1,g:"蛙",t:"m",a:"fire",atk:1300,on:"draw",ov:1,od:"山札から 1 枚引く",f:"樹冠ごとに作家を分けて展示する、バーチャル美術館。開くたびに新しい作家を招く。"},
  {n:"膿む映画館",g:"膿",t:"m",a:"fire",atk:1600,on:"weaken",ov:200,od:"相手の場の作品すべての攻撃力を -200",f:"句集「キャラメルポップコーンは膿む」から設計した建築。甘いものは、まわりから膿ませていく。"},
  {n:"コロッセオの塔",g:"闘",t:"m",a:"fire",atk:2300,star:1,on:"snipe",od:"相手の場でいちばん弱い作品を倒す",f:"コロッセオを大枠にしたスタジアムの上に、自作スケッチの塔を建てる。闘技場は、弱いものから脱落する。"},
- {n:"少し外に出られる家",g:"外",t:"m",a:"water",atk:1000,on:"heal",ov:500,od:"自分の命を 500 ふやす",f:"どこからでも「少し」外に出られる平屋。少し外の空気を吸うだけで、命が戻る。"},
- {n:"二つの器の家",g:"器",t:"m",a:"water",atk:1200,on:"heal",ov:700,od:"自分の命を 700 ふやす",f:"二つの器が重なり合う、淡い色の住宅。器は、満たすためにある。"},
+ {n:"少し外に出られる家",st:1,g:"外",t:"m",a:"water",atk:1000,on:"heal",ov:500,od:"自分の命を 500 ふやす",f:"どこからでも「少し」外に出られる平屋。少し外の空気を吸うだけで、命が戻る。"},
+ {n:"二つの器の家",st:1,g:"器",t:"m",a:"water",atk:1200,on:"heal",ov:700,od:"自分の命を 700 ふやす",f:"二つの器が重なり合う、淡い色の住宅。器は、満たすためにある。"},
  {n:"10の暮らし",g:"十",t:"m",a:"water",atk:1500,on:"buffall",ov:200,od:"自分の場の作品すべての攻撃力を +200",f:"「10の暮らし、10のレベル」。世帯ごとに色を分けた集合住宅。暮らしは、となり合って支え合う。"},
  {n:"水冠の塔",g:"灯",t:"m",a:"water",atk:1700,on:"expose",od:"相手が伏せている罠をすべて壊す",f:"「水冠の塔と灯守の家」。灯守の灯りが、伏せられたものを照らし出す。"},
  {n:"幾何学的滝行建築",g:"滝",t:"m",a:"water",atk:2400,star:1,on:"heal",ov:1000,od:"自分の命を 1000 ふやす",f:"滝行の姿を幾何学に抽象化した瞑想施設。滝に打たれて、身を清める。"},
- {n:"素御",g:"素",t:"m",a:"wind",atk:1100,on:"draw",ov:1,od:"山札から 1 枚引く",slay:"島津耕造",f:"自分で作り、運用している対話型の Web アプリ。つくった本人の考えを知りつくしているので、島津耕造にだけは負けない。"},
- {n:"斜めの家",g:"斜",t:"m",a:"wind",atk:1300,on:"heal",ov:600,od:"自分の命を 600 ふやす",f:"車椅子でも過ごせる、段々畑の平屋。行き道と帰り道をめぐるうちに、からだが休まる。"},
+ {n:"素御",st:1,g:"素",t:"m",a:"wind",atk:1100,on:"draw",ov:1,od:"山札から 1 枚引く",slay:"島津耕造",f:"自分で作り、運用している対話型の Web アプリ。つくった本人の考えを知りつくしているので、島津耕造にだけは負けない。"},
+ {n:"斜めの家",st:1,g:"斜",t:"m",a:"wind",atk:1300,on:"heal",ov:600,od:"自分の命を 600 ふやす",f:"車椅子でも過ごせる、段々畑の平屋。行き道と帰り道をめぐるうちに、からだが休まる。"},
  {n:"森の情景",g:"森",t:"m",a:"wind",atk:1600,on:"buffall",ov:200,od:"自分の場の作品すべての攻撃力を +200",f:"秋葉原の建築計画「アキバ・クリエイティブ・パーク」。つくり手の集まる森が、みんなを育てる。"},
  {n:"ボロメオの寝所",g:"環",t:"m",a:"wind",atk:2200,star:1,on:"weaken",ov:300,od:"相手の場の作品すべての攻撃力を -300",f:"自由率俳句 13 句を精神分析で読み解いて設計した建築。無意識の結び目をほどかれると、だれもが弱くなる。"},
  {n:"二条城 本丸",g:"城",t:"m",a:"wind",atk:2800,star:1,on:"buffall",ov:300,od:"自分の場の作品すべての攻撃力を +300",f:"かつて現場監督として立った、本丸の現場。監督がいると、現場がしまる。"},
- {n:"自由率俳句",g:"句",t:"s",e:"arrow",d:"相手の命を 800 減らす。",f:"自分が考案した俳句の形式。短い言葉ほど、深く刺さる。"},
+ {n:"自由率俳句",st:1,g:"句",t:"s",e:"arrow",d:"相手の命を 800 減らす。",f:"自分が考案した俳句の形式。短い言葉ほど、深く刺さる。"},
  {n:"祈りの手",st:1,g:"祈",t:"s",e:"heal",d:"自分の命を 1000 ふやす。",f:"自分の手の形「祈り」をアイコンにした建築から。祈ると、命が満ちる。"},
  {n:"豆腐の角",st:1,g:"豆",t:"s",e:"halve",d:"相手の場でいちばん強い作品の攻撃力を半分にする。",f:"小説「恋路を邪魔する奴は豆腐の角に頭をぶつけて死ねないでいろ」。豆腐の角では倒れない。でも、だいぶ効く。"},
- {n:"AIは筆",g:"筆",t:"s",e:"buff",d:"自分の場でいちばん強い作品の攻撃力を +500（ずっと）。",f:"創作の信条。AI は便利な道具ではなく、絵描きにとっての筆である。"},
+ {n:"AIは筆",st:1,g:"筆",t:"s",e:"buff",d:"自分の場でいちばん強い作品の攻撃力を +500（ずっと）。",f:"創作の信条。AI は便利な道具ではなく、絵描きにとっての筆である。"},
  {n:"志向縁占い",st:1,g:"占",t:"s",e:"draw",d:"山札から 2 枚引く。",f:"志向縁の考え方をもとにした占い。占うと、次の縁が手に入る。"},
- {n:"城の図面",g:"図",t:"t",e:"pit",d:"相手が攻撃力 1500 以上の作品を出したら、その作品を倒す。",f:"自作小説「城の図面」。図面を読めば、大きな建物の弱いところが分かる。"},
+ {n:"城の図面",st:1,g:"図",t:"t",e:"pit",d:"相手が攻撃力 1500 以上の作品を出したら、その作品を倒す。",f:"自作小説「城の図面」。図面を読めば、大きな建物の弱いところが分かる。"},
  {n:"ネットリテラシー",st:1,g:"網",t:"t",e:"mirror",d:"相手の作品が攻撃してきたら、その作品を倒す。",f:"詩「ネットリテラシー」から。攻撃してきた言葉は、そのまま本人に返る。"},
  {n:"一本の傘",st:1,g:"傘",t:"t",e:"guard",d:"相手の作品が攻撃してきたら、その攻撃を止める（だれも倒れない）。",f:"委託された映画脚本の、一本の傘。降ってくるものから、そっと守る。"},
- {n:"ふたつの窓",g:"窓",t:"t",e:"guarddraw",d:"相手の作品が攻撃してきたら、その攻撃を止めて、山札から 1 枚引く。",f:"同じ言葉を、ふたりがちがう窓から見る言葉当てゲーム。止まった攻撃の向こうに、ヒントが見える。"},
- {n:"干された町",g:"干",t:"t",e:"revenge",d:"自分の作品が戦いで倒されたら、相手の命を 1000 減らす。",f:"町を歩いて撮った写真の動画。干されたものにも、言い分がある。"},
- {n:"ワケル",g:"分",t:"t",e:"counter",d:"相手が言葉の札を使ったら、それを打ち消す（効かなくなる）。",f:"自作の文字起こしアプリ。だれの言葉かを分けてしまえば、言葉は効かない。"},
- {n:"街の幾何学",g:"街",t:"t",e:"mirror",d:"相手の作品が攻撃してきたら、その作品を倒す。",f:"概念象形アートの作品。街に引かれた線が、攻めてきたものを切りとる。"},
+ {n:"ふたつの窓",st:1,g:"窓",t:"t",e:"guarddraw",d:"相手の作品が攻撃してきたら、その攻撃を止めて、山札から 1 枚引く。",f:"同じ言葉を、ふたりがちがう窓から見る言葉当てゲーム。止まった攻撃の向こうに、ヒントが見える。"},
+ {n:"干された町",st:1,g:"干",t:"t",e:"revenge",d:"自分の作品が戦いで倒されたら、相手の命を 1000 減らす。",f:"町を歩いて撮った写真の動画。干されたものにも、言い分がある。"},
+ {n:"ワケル",st:1,g:"分",t:"t",e:"counter",d:"相手が言葉の札を使ったら、それを打ち消す（効かなくなる）。",f:"自作の文字起こしアプリ。だれの言葉かを分けてしまえば、言葉は効かない。"},
+ {n:"街の幾何学",st:1,g:"街",t:"t",e:"mirror",d:"相手の作品が攻撃してきたら、その作品を倒す。",f:"概念象形アートの作品。街に引かれた線が、攻めてきたものを切りとる。"},
  // ---- 問題を解いて手に入る札（26-45） ----
  // R
  {n:"箱をずらした家",g:"箱",t:"m",a:"fire",atk:1700,blast:500,rare:"R",f:"三つの正方形の箱を、斜めにずらして重ねた住宅。ずらした箱が、相手に飛び出す。"},
- {n:"英会話ラボ",g:"声",t:"s",e:"draw",v:3,d:"山札から 3 枚引く。",rare:"R",f:"声だけで練習する AI 英会話アプリ。話せば話すほど、ことばが増える。"},
+ {n:"英会話ラボ",st:1,g:"声",t:"s",e:"draw",v:3,d:"山札から 3 枚引く。",rare:"R",f:"声だけで練習する AI 英会話アプリ。話せば話すほど、ことばが増える。"},
  {n:"路地の洗濯物",g:"布",t:"m",a:"wind",atk:1500,double:1,rare:"R",f:"町を歩いて撮った写真に、哲学的な語りをつけた動画から。風にゆれて、二度はためく。"},
  {n:"ここに在る館",g:"在",t:"m",a:"fire",atk:1900,on:"arrow",ov:500,od:"相手の命を 500 減らす",rare:"R",f:"「I AM HERE」の絵から設計した建築。ここに在ると叫ぶ声が、相手にとどく。"},
  {n:"円錐台の集合住宅",g:"錐",t:"m",a:"water",atk:1900,on:"heal",ov:500,od:"自分の命を 500 ふやす",rare:"R",f:"反った曲面プレートの外皮をまとう集合住宅。外皮が、住む人を守る。"},
- {n:"気分の便り",g:"便",t:"s",e:"heal",v:2000,d:"自分の命を 2000 ふやす。",rare:"R",f:"表情から気分を読み取り、文章にして大切な人に伝えるアプリの構想。気持ちが届くと、元気が出る。"},
+ {n:"気分の便り",st:1,g:"便",t:"s",e:"heal",v:2000,d:"自分の命を 2000 ふやす。",rare:"R",f:"表情から気分を読み取り、文章にして大切な人に伝えるアプリの構想。気持ちが届くと、元気が出る。"},
  // SR
  {n:"温室のサナトリウム",g:"温",t:"m",a:"water",atk:2100,on:"heal",ov:1000,od:"自分の命を 1000 ふやす",rare:"SR",f:"食堂、ガラスの渡り廊下、球体の温室、扇形の居室をもつ療養の施設。"},
- {n:"語る画像",g:"語",t:"s",e:"arrow",v:1500,d:"相手の命を 1500 減らす。",rare:"SR",f:"画像を入れるだけで、語りと字幕と音楽のついた動画になる。語られた言葉は強い。"},
+ {n:"語る画像",st:1,g:"語",t:"s",e:"arrow",v:1500,d:"相手の命を 1500 減らす。",rare:"SR",f:"画像を入れるだけで、語りと字幕と音楽のついた動画になる。語られた言葉は強い。"},
  {n:"パヴァーヌの建築",g:"譜",t:"m",a:"wind",atk:2200,pierce:1,rare:"SR",f:"ラヴェル「亡き王女のためのパヴァーヌ」の楽譜から導いた建築。音楽は、どんな罠もすりぬける。"},
  {n:"あわいの家",g:"淡",t:"t",e:"mirror",d:"相手の作品が攻撃してきたら、その作品を倒す。",rare:"SR",f:"「祈りの建築」の別名。あわいに踏みこんだものは、帰れない。"},
  {n:"問いとト書き",g:"問",t:"t",e:"counter",d:"相手が言葉の札を使ったら、それを打ち消す（効かなくなる）。",rare:"SR",f:"素御との対話で生まれた、問いとト書き。問い返されると、言葉は力を失う。"},
  {n:"晴盲のカルテ",g:"診",t:"t",e:"guardheal",d:"相手の作品が攻撃してきたら、その攻撃を止めて、自分の命を 500 ふやす。",rare:"SR",f:"見える人も見えない人も使えるカルテ管理ソフトの構想。手当てをする人の道具。"},
- {n:"Japanese Lab",g:"日",t:"s",e:"draw",v:3,d:"山札から 3 枚引く。",rare:"SR",f:"英会話ラボの姉妹版。外国の人のための日本語練習アプリ。"},
+ {n:"Japanese Lab",st:1,g:"日",t:"s",e:"draw",v:3,d:"山札から 3 枚引く。",rare:"SR",f:"英会話ラボの姉妹版。外国の人のための日本語練習アプリ。"},
  {n:"顕現志向",g:"顕",t:"s",e:"arrow",v:2000,d:"相手の命を 2000 減らす。",rare:"SR",f:"EN新聞のコラム。思っていることを、はっきり形にする。"},
  // UR
  {n:"EN新聞",g:"報",t:"s",e:"expose",d:"相手が伏せている罠を、すべて壊す。",rare:"UR",f:"その時のトレンドを新聞の一面にするアプリ。隠れていたものが、すべて記事になる。"},
@@ -220,9 +230,9 @@ const CARDS=[
  // ---- 夜の主に勝って手に入る札（46-59、65-67）：ふつう→R、つよい→SR、最強→UR ----
  {n:"亀川安行",g:"亀",t:"m",a:"water",atk:1800,double:1,rare:"R",f:"兜太現代俳句新人賞に応募したときの俳号。五七五のように、二度打つ。"},
  {n:"寺社の図面",g:"寺",t:"m",a:"wind",atk:1900,on:"draw",ov:1,od:"山札から 1 枚引く",rare:"R",f:"寺社仏閣を専門とする建設会社で、施工管理と CAD 図面をかいていたころ。図面を引くように、札を引く。"},
- {n:"朝までの配信",g:"配",t:"s",e:"heal",v:1500,d:"自分の命を 1500 ふやす。",rare:"R",f:"ツイキャスで、顔を出して朝まで続けた長い配信。夜通し話すと、なぜか元気になる。"},
- {n:"できたよ帳",g:"帳",t:"t",e:"guard",d:"相手の作品が攻撃してきたら、その攻撃を止める（だれも倒れない）。",rare:"R",f:"話すことがむずかしい人のための、作業の進みぐあいを記録するアプリの構想。できたことを守る。"},
- {n:"文庫めくり",g:"頁",t:"t",e:"counter",d:"相手が言葉の札を使ったら、それを打ち消す（効かなくなる）。",rare:"R",f:"本をめくる手ざわりを大事にした、青空文庫のリーダーアプリの構想。ページをめくれば、言葉は次へ流れる。"},
+ {n:"朝までの配信",st:1,g:"配",t:"s",e:"heal",v:1500,d:"自分の命を 1500 ふやす。",rare:"R",f:"ツイキャスで、顔を出して朝まで続けた長い配信。夜通し話すと、なぜか元気になる。"},
+ {n:"できたよ帳",st:1,g:"帳",t:"t",e:"guard",d:"相手の作品が攻撃してきたら、その攻撃を止める（だれも倒れない）。",rare:"R",f:"話すことがむずかしい人のための、作業の進みぐあいを記録するアプリの構想。できたことを守る。"},
+ {n:"文庫めくり",st:1,g:"頁",t:"t",e:"counter",d:"相手が言葉の札を使ったら、それを打ち消す（効かなくなる）。",rare:"R",f:"本をめくる手ざわりを大事にした、青空文庫のリーダーアプリの構想。ページをめくれば、言葉は次へ流れる。"},
  {n:"マテーラの洞窟",g:"洞",t:"m",a:"water",atk:2200,double:1,rare:"SR",f:"「10の暮らし、10のレベル」の手がかりにした、マテーラの洞窟住居。"},
  {n:"空想力学",g:"楽",t:"s",e:"buffall",v:400,d:"自分の場の作品すべての攻撃力を +400（ずっと）。",rare:"SR",f:"作曲と MV づくりを、お金を受け取らずに引き受けた曲。音楽は、場のみんなを持ち上げる。"},
  {n:"敷地から立つ建築",g:"敷",t:"m",a:"wind",atk:2300,pierce:1,rare:"SR",f:"郵便番号と地図から、その場所に必然の建築を立ち上げるアプリ。土地に根ざすものは、罠に足をとられない。"},
@@ -233,49 +243,49 @@ const CARDS=[
  {n:"前衛",g:"衛",t:"s",e:"arrow",v:2500,self:500,d:"相手の命を 2500 減らす。そのかわり、自分の命も 500 減る。",rare:"UR",f:"前衛に立ち続ければ、必ず傷を負う。それでもやめない。"},
  {n:"タイへの旅",g:"旅",t:"s",e:"draw",v:4,d:"山札から 4 枚引く。",rare:"UR",f:"研修先にタイを望んで書いた、在外研修の応募。旅に出ると、手に入るものが多い。"},
  // ---- クルカジ（みかん）の札（60-66）。はじめから持っている。性格から効果を読み取った ----
- {n:"クルカジ（みかん）",g:"柑",t:"m",a:"fire",atk:1500,pay:1,joke:1,f:"KS企画に新しく入った社員で、建築の AI 動画をつくる。つらいことも笑いに変えるネタの名手。ただひとりの歩合制で、働いた分だけ手札が増える。"},
- {n:"クルカジ（みかん）",g:"柑",t:"m",a:"fire",atk:1500,pay:1,joke:1,f:"KS企画に新しく入った社員で、建築の AI 動画をつくる。つらいことも笑いに変えるネタの名手。ただひとりの歩合制で、働いた分だけ手札が増える。"},
- {n:"クルカジ（みかん）",g:"柑",t:"m",a:"fire",atk:1500,pay:1,joke:1,f:"KS企画に新しく入った社員で、建築の AI 動画をつくる。つらいことも笑いに変えるネタの名手。ただひとりの歩合制で、働いた分だけ手札が増える。"},
- {n:"みかんの建築動画",g:"映",t:"s",e:"revive",d:"自分の倒れた作品のうち、いちばん強いものを場によみがえらせる（場がいっぱいなら手札へ）。",f:"クルカジがつくる、建築を題材にした AI 動画。倒れた建築も、映像の中でよみがえる。"},
+ {n:"クルカジ（みかん）",st:1,g:"柑",t:"m",a:"fire",atk:1500,pay:1,joke:1,f:"KS企画に新しく入った社員で、建築の AI 動画をつくる。つらいことも笑いに変えるネタの名手。ただひとりの歩合制で、働いた分だけ手札が増える。"},
+ {n:"クルカジ（みかん）",st:1,g:"柑",t:"m",a:"fire",atk:1500,pay:1,joke:1,f:"KS企画に新しく入った社員で、建築の AI 動画をつくる。つらいことも笑いに変えるネタの名手。ただひとりの歩合制で、働いた分だけ手札が増える。"},
+ {n:"クルカジ（みかん）",st:1,g:"柑",t:"m",a:"fire",atk:1500,pay:1,joke:1,f:"KS企画に新しく入った社員で、建築の AI 動画をつくる。つらいことも笑いに変えるネタの名手。ただひとりの歩合制で、働いた分だけ手札が増える。"},
+ {n:"みかんの建築動画",st:1,g:"映",t:"s",e:"revive",d:"自分の倒れた作品のうち、いちばん強いものを場によみがえらせる（場がいっぱいなら手札へ）。",f:"クルカジがつくる、建築を題材にした AI 動画。倒れた建築も、映像の中でよみがえる。"},
  {n:"みかんの祈り",st:1,g:"祷",t:"s",e:"tutor",d:"山札の中でいちばん強い作品を 1 枚、手札に加える。",f:"「主よ、導き給え」。クルカジは祈りの言葉をよく使う。祈れば、いちばん頼れるものが来る。"},
- {n:"みかんのログ",g:"録",t:"t",e:"record",d:"自分の作品が戦いで倒されたら、その作品を手札にもどす。",f:"なんでも言葉にして、記録に残したがる。ログに残ったものは、消えない。"},
- {n:"みかんの歩合",g:"歩",t:"s",e:"perMon",v:400,d:"自分の場の作品 1 つにつき、相手の命を 400 減らす。",f:"だれとでもほどよい距離でつながる、仲間の真ん中にいる人。場の仲間が多いほど効く。"},
+ {n:"みかんのログ",st:1,g:"録",t:"t",e:"record",d:"自分の作品が戦いで倒されたら、その作品を手札にもどす。",f:"なんでも言葉にして、記録に残したがる。ログに残ったものは、消えない。"},
+ {n:"みかんの歩合",st:1,g:"歩",t:"s",e:"perMon",v:400,d:"自分の場の作品 1 つにつき、相手の命を 400 減らす。",f:"だれとでもほどよい距離でつながる、仲間の真ん中にいる人。場の仲間が多いほど効く。"},
  // ---- 夜の主に勝って手に入る札（つづき） ----
  {n:"消尽",g:"尽",t:"s",e:"shoujin",v:500,d:"手札をすべて捨てる。捨てた 1 枚につき、相手の命を 500 減らす。",rare:"SR",f:"「コスパが悪いほど楽しい」。精進ではなく消尽。使い果たすほど、強い。"},
  {n:"エラー",st:1,g:"誤",t:"s",e:"error",d:"何が起きるかわからない。8 つの効果のどれか 1 つが出る。",rare:"SR",f:"「人間ができることはただ 1 つ、エラー」。AI にはない、人間だけの力。"},
- {n:"恩返し",g:"恩",t:"s",e:"revive",d:"自分の倒れた作品のうち、いちばん強いものを場によみがえらせる（場がいっぱいなら手札へ）。",rare:"R",f:"通信がなくなっても、自分なりのやり方で本当の恩を返す。師のおかげで目が覚めた。"},
+ {n:"恩返し",st:1,g:"恩",t:"s",e:"revive",d:"自分の倒れた作品のうち、いちばん強いものを場によみがえらせる（場がいっぱいなら手札へ）。",rare:"R",f:"通信がなくなっても、自分なりのやり方で本当の恩を返す。師のおかげで目が覚めた。"},
 
  // ---- 盾（シールド）の札。施工の現場の経験から（70-72） ----
  {n:"養生シート",g:"養",t:"s",e:"shieldadd",v:1,st:1,d:"山札の上から 1 枚を、自分の盾に加える。",f:"施工管理の現場では、まず建物を養生シートで守る。守りを一枚ふやす。"},
- {n:"解体工事",g:"壊",t:"s",e:"shieldbreak",v:1,d:"相手の盾を 1 枚割る。",f:"建てる仕事は、こわす仕事を知ることから。相手の守りを一枚はがす。"},
+ {n:"解体工事",st:1,g:"壊",t:"s",e:"shieldbreak",v:1,d:"相手の盾を 1 枚割る。",f:"建てる仕事は、こわす仕事を知ることから。相手の守りを一枚はがす。"},
  {n:"二条城の石垣",g:"垣",t:"s",e:"shieldadd",v:2,st:1,d:"山札の上から 2 枚を、自分の盾に加える。",rare:"SR",f:"本丸の現場で見上げた石垣。何百年も城を守ってきた。"},
  // ---- レアカード（73-110）。どれも島津耕造の経験から。問題を解くか、夜の主に勝つと、ランダムで手に入る ----
  // R
- {n:"太宰治賞の封筒",g:"封",t:"s",e:"draw",v:3,d:"山札から 3 枚引く。",rare:"R",f:"小説を入れて、太宰治賞に送った封筒。書いたものを送り出すと、次の手がやってくる。"},
- {n:"オモコロへの名乗り",g:"笑",t:"s",e:"arrow",v:1000,d:"相手の命を 1000 減らす。",rare:"R",f:"島津耕造として、オモコロのライターに名乗り出た。面白さは、まっすぐ効く。"},
- {n:"業務委託の原稿",g:"稿",t:"m",a:"water",atk:1700,pay:1,rare:"R",f:"innovaTopia の業務委託で書く記事。書いた分だけ、次の仕事につながる。"},
- {n:"喫茶店の PV",g:"珈",t:"m",a:"fire",atk:1800,on:"heal",ov:600,od:"自分の命を 600 ふやす",rare:"R",f:"勝田台の喫茶店のために作った宣伝動画。コーヒーの香りで、ひと休み。"},
- {n:"写真三十五枚",g:"写",t:"m",a:"wind",atk:1600,on:"draw",ov:1,od:"山札から 1 枚引く",rare:"R",f:"八千代台北を歩いて撮った 35 枚の写真。歩けば、何かが見つかる。"},
- {n:"CAD図面",g:"寸",t:"t",e:"pit",d:"相手が攻撃力 1500 以上の作品を出したら、その作品を倒す。",rare:"R",f:"施工管理のころに引いた CAD 図面。寸法の合わないものは、現場に通さない。"},
- {n:"定例会議の目録",g:"目",t:"s",e:"tutor",d:"山札の中でいちばん強い作品を 1 枚、手札に加える。",rare:"R",f:"KS企画の週ごとの定例会議でつくる目録。いちばん大事な議題を、まず出す。"},
- {n:"カセットテープ",g:"巻",t:"t",e:"record",d:"自分の作品が戦いで倒されたら、その作品を手札にもどす。",rare:"R",f:"カセットテープで録音し、編集する。残した音は、何度でも巻きもどせる。"},
- {n:"深夜の議論",g:"夜",t:"s",e:"buffall",v:300,d:"自分の場の作品すべての攻撃力を +300（ずっと）。",rare:"R",f:"夜中の 0 時から 4 時、友人と通話して議論し、作品を磨く。"},
- {n:"行人",g:"行",t:"t",e:"counter",d:"相手が言葉の札を使ったら、それを打ち消す（効かなくなる）。",rare:"R",f:"影響を受けた漱石の後期作品『行人』。言葉は、相手にまっすぐには届かない。"},
- {n:"球体の温室",g:"球",t:"t",e:"guardheal",d:"相手の作品が攻撃してきたら、その攻撃を止めて、自分の命を 500 ふやす。",rare:"R",f:"サナトリウムの、ガラスの球体の温室。守られて、息をつく。"},
- {n:"AI議事録",g:"議",t:"s",e:"expose",d:"相手が伏せている罠を、すべて壊す。",rare:"R",f:"ワケルに加える、話者を聞き分ける議事録の機能。だれが何を伏せたか、ぜんぶ書き出す。"},
+ {n:"太宰治賞の封筒",st:1,g:"封",t:"s",e:"draw",v:3,d:"山札から 3 枚引く。",rare:"R",f:"小説を入れて、太宰治賞に送った封筒。書いたものを送り出すと、次の手がやってくる。"},
+ {n:"オモコロへの名乗り",st:1,g:"笑",t:"s",e:"arrow",v:1000,d:"相手の命を 1000 減らす。",rare:"R",f:"島津耕造として、オモコロのライターに名乗り出た。面白さは、まっすぐ効く。"},
+ {n:"業務委託の原稿",st:1,g:"稿",t:"m",a:"water",atk:1700,pay:1,rare:"R",f:"innovaTopia の業務委託で書く記事。書いた分だけ、次の仕事につながる。"},
+ {n:"喫茶店の PV",st:1,g:"珈",t:"m",a:"fire",atk:1800,on:"heal",ov:600,od:"自分の命を 600 ふやす",rare:"R",f:"勝田台の喫茶店のために作った宣伝動画。コーヒーの香りで、ひと休み。"},
+ {n:"写真三十五枚",st:1,g:"写",t:"m",a:"wind",atk:1600,on:"draw",ov:1,od:"山札から 1 枚引く",rare:"R",f:"八千代台北を歩いて撮った 35 枚の写真。歩けば、何かが見つかる。"},
+ {n:"CAD図面",st:1,g:"寸",t:"t",e:"pit",d:"相手が攻撃力 1500 以上の作品を出したら、その作品を倒す。",rare:"R",f:"施工管理のころに引いた CAD 図面。寸法の合わないものは、現場に通さない。"},
+ {n:"定例会議の目録",st:1,g:"目",t:"s",e:"tutor",d:"山札の中でいちばん強い作品を 1 枚、手札に加える。",rare:"R",f:"KS企画の週ごとの定例会議でつくる目録。いちばん大事な議題を、まず出す。"},
+ {n:"カセットテープ",st:1,g:"巻",t:"t",e:"record",d:"自分の作品が戦いで倒されたら、その作品を手札にもどす。",rare:"R",f:"カセットテープで録音し、編集する。残した音は、何度でも巻きもどせる。"},
+ {n:"深夜の議論",st:1,g:"夜",t:"s",e:"buffall",v:300,d:"自分の場の作品すべての攻撃力を +300（ずっと）。",rare:"R",f:"夜中の 0 時から 4 時、友人と通話して議論し、作品を磨く。"},
+ {n:"行人",st:1,g:"行",t:"t",e:"counter",d:"相手が言葉の札を使ったら、それを打ち消す（効かなくなる）。",rare:"R",f:"影響を受けた漱石の後期作品『行人』。言葉は、相手にまっすぐには届かない。"},
+ {n:"球体の温室",st:1,g:"球",t:"t",e:"guardheal",d:"相手の作品が攻撃してきたら、その攻撃を止めて、自分の命を 500 ふやす。",rare:"R",f:"サナトリウムの、ガラスの球体の温室。守られて、息をつく。"},
+ {n:"AI議事録",st:1,g:"議",t:"s",e:"expose",d:"相手が伏せている罠を、すべて壊す。",rare:"R",f:"ワケルに加える、話者を聞き分ける議事録の機能。だれが何を伏せたか、ぜんぶ書き出す。"},
  // SR
  {n:"ローカルの素御",g:"素",t:"m",a:"wind",atk:2000,on:"draw",ov:1,od:"山札から 1 枚引く",slay:"島津耕造",rare:"SR",f:"外の API から、手元のマシンで動くように移す素御。家の中で育っても、やっぱり島津耕造にだけは負けない。"},
  {n:"樹冠の展示室",g:"冠",t:"m",a:"wind",atk:2100,on:"buffall",ov:300,od:"自分の場の作品すべての攻撃力を +300",rare:"SR",f:"大蛙美術館の、樹冠ごとに作家を分けた展示室。一人ひとりに、光が当たる。"},
- {n:"色分けの哲学",g:"色",t:"s",e:"buffall",v:500,d:"自分の場の作品すべての攻撃力を +500（ずっと）。",rare:"SR",f:"10の暮らしで、世帯ごとに色を分けた考え方。ちがう色が並ぶほど、全体が引き立つ。"},
+ {n:"色分けの哲学",st:1,g:"色",t:"s",e:"buffall",v:500,d:"自分の場の作品すべての攻撃力を +500（ずっと）。",rare:"SR",f:"10の暮らしで、世帯ごとに色を分けた考え方。ちがう色が並ぶほど、全体が引き立つ。"},
  {n:"シナリオゲーム化",g:"遊",t:"s",e:"revive",d:"自分の倒れた作品のうち、いちばん強いものを場によみがえらせる（場がいっぱいなら手札へ）。",rare:"SR",f:"小説「城の図面」を PC 向けのシナリオゲームにする計画。物語は、何度でもやり直せる。"},
  {n:"設計台帳",g:"台",t:"t",e:"mirror",d:"相手の作品が攻撃してきたら、その作品を倒す。",rare:"SR",f:"建築動画の指示文で、図面とパースの食いちがいを正す台帳。つじつまの合わない攻撃は、はね返る。"},
  {n:"八千代市への企画書",g:"企",t:"s",e:"shieldadd",v:2,st:1,d:"山札の上から 2 枚を、自分の盾に加える。",rare:"SR",f:"電柱に詩をかかげるために、八千代市へ出す企画書。町の後ろだてが、盾になる。"},
- {n:"読み上げ対応",g:"読",t:"t",e:"guarddraw",d:"相手の作品が攻撃してきたら、その攻撃を止めて、山札から 1 枚引く。",rare:"SR",f:"カルテ管理ソフトを、画面読み上げに対応させる構想。見えない攻撃も、音で先に分かる。"},
+ {n:"読み上げ対応",st:1,g:"読",t:"t",e:"guarddraw",d:"相手の作品が攻撃してきたら、その攻撃を止めて、山札から 1 枚引く。",rare:"SR",f:"カルテ管理ソフトを、画面読み上げに対応させる構想。見えない攻撃も、音で先に分かる。"},
  {n:"浮く塔",g:"浮",t:"m",a:"fire",atk:2400,pierce:1,rare:"SR",f:"スタジアムの上に浮かぶ塔。足もとの罠は、とどかない。"},
  {n:"灯守の家",g:"守",t:"m",a:"water",atk:2200,on:"shieldadd",ov:1,od:"山札の上から 1 枚を、自分の盾に加える",rare:"SR",f:"水冠の塔のそばの、灯を守る家。守りが一枚ふえる。"},
- {n:"句集十五句",g:"膿",t:"s",e:"weaken",v:500,d:"相手の場の作品すべての攻撃力を -500（ずっと）。",rare:"SR",f:"句集「キャラメルポップコーンは膿む」の 15 句。甘いものから、じわじわ膿んでいく。"},
- {n:"創業計画書",g:"創",t:"s",e:"draw",v:3,d:"山札から 3 枚引く。",rare:"SR",f:"商工会議所で相談したあと、自分なりに書く創業計画書。書けば、道が見えてくる。"},
- {n:"アンビエント",g:"音",t:"t",e:"guard",d:"相手の作品が攻撃してきたら、その攻撃を止める（だれも倒れない）。",rare:"SR",f:"アンビエント音楽の制作。音が場をしずめ、争いを止める。"},
+ {n:"句集十五句",st:1,g:"膿",t:"s",e:"weaken",v:500,d:"相手の場の作品すべての攻撃力を -500（ずっと）。",rare:"SR",f:"句集「キャラメルポップコーンは膿む」の 15 句。甘いものから、じわじわ膿んでいく。"},
+ {n:"創業計画書",st:1,g:"創",t:"s",e:"draw",v:3,d:"山札から 3 枚引く。",rare:"SR",f:"商工会議所で相談したあと、自分なりに書く創業計画書。書けば、道が見えてくる。"},
+ {n:"アンビエント",st:1,g:"音",t:"t",e:"guard",d:"相手の作品が攻撃してきたら、その攻撃を止める（だれも倒れない）。",rare:"SR",f:"アンビエント音楽の制作。音が場をしずめ、争いを止める。"},
  {n:"任侠",g:"侠",t:"m",a:"fire",atk:1900,on:"bolt",od:"相手の場でいちばん強い作品を倒す",rare:"SR",f:"任侠映画と、高倉健へのあこがれ。強きをくじく。"},
  {n:"レム",g:"レ",t:"m",a:"water",atk:2000,double:1,rare:"SR",f:"Discord などで名乗る、もうひとつの名前。ふたつの名で、二度動く。"},
  {n:"週間ダイジェスト",g:"週",t:"s",e:"perMon",v:500,d:"自分の場の作品 1 つにつき、相手の命を 500 減らす。",rare:"SR",f:"innovaTopia に提案した、一週間のニュースをまとめる AI 動画。まとめる数が多いほど強い。"},
@@ -296,7 +306,7 @@ const BASE_N=26, DMIN=20, DMAX=30;
 const REWARDS=[...Array(20).keys()].map(i=>26+i), PER=1;
 const POOL=()=>CARDS.map((c,i)=>i).filter(i=>CARDS[i].rare); // レアカードすべて
 function pickRare(tiers,own){const w={R:6,SR:3,UR:1};const left=POOL().filter(i=>tiers.includes(CARDS[i].rare)&&!own.has(i));if(!left.length)return null;let t=left.reduce((a,i)=>a+w[CARDS[i].rare],0)*Math.random();for(const i of left){t-=w[CARDS[i].rare];if(t<=0)return i}return left[left.length-1]}
-const WINS=[...[...Array(14).keys()].map(i=>46+i),67,68,69,72], FREE=[60,61,62,63,64,65,66,70,71], SHIELDS=5, ST_IN_SHIELD=2;
+const WINS=[...[...Array(14).keys()].map(i=>46+i),67,68,69,72], FREE=[60,61,62,63,64,65,66,70,71], SHIELDS=5, ST_IN_SHIELD=3;
 /* 夜の主の強さ：デッキ（札の強さ）が変わる。勝つと、その強さに応じたレアカード */
 const LV=[
  {n:"やさしい",d:"弱めの作品と、基本の言葉・罠だけ",r:null},
@@ -320,7 +330,7 @@ function cpuDeck(lv){
   while(k<4&&sts.length&&pos>=0){if(CARDS[d[pos]].t!=="m"&&!CARDS[d[pos]].st){d[pos]=sts.shift();k++}pos--}
   return d;
 }
-const ABIL=c=>[c.on?["出たとき",c.od]:null,c.pay?["歩合","攻撃で相手の命を減らすか盾を割ったら、1 枚引く"]:null,c.joke?["笑い","戦いで負けて命が減るときは、かわりに同じだけ命がふえる"]:null,c.slay?["天敵",`「${c.slay}」との戦いでは必ず勝つ`]:null,c.st?["S・トリガー","盾から手札に来たとき、ただで発動する"]:null,c.double?["連撃","1 ターンに 2 回攻撃できる"]:null,c.pierce?["貫通","相手の罠が効かない（出したときも、攻撃したときも）"]:null,c.blast?["開幕",`場に出たとき、相手の命を ${c.blast} 減らす`]:null].filter(Boolean);
+const ABIL=c=>[c.on?["出たとき",c.od]:null,c.pay?["歩合","攻撃で相手の命を減らすか盾を割ったら、1 枚引く"]:null,c.joke?["笑い","戦いで負けて命が減るときは、かわりに同じだけ命がふえる"]:null,c.slay?["天敵",`「${c.slay}」との戦いでは必ず勝つ`]:null,c.st?["S・トリガー",c.t==="m"?"盾から出たとき、ただで場に出る（場があいていれば）":c.t==="t"?"盾から出たとき、ただで伏せられる":"盾から出たとき、ただで発動する"]:null,c.double?["連撃","1 ターンに 2 回攻撃できる"]:null,c.pierce?["貫通","相手の罠が効かない（出したときも、攻撃したときも）"]:null,c.blast?["開幕",`場に出たとき、相手の命を ${c.blast} 減らす`]:null].filter(Boolean);
 const QUIZ=[ // [question, correct, wrong, wrong, wrong]
 ["島津耕造は、自分の本業を何だと考えている？", "俳人・詩人・小説家", "建築家", "プログラマー", "映像監督"],
 ["自分の立ち位置について、どう考えている？", "自分はほぼ確実に「前衛」にいる", "いつも流行の真ん中にいる", "昔ながらの伝統の側にいる", "後ろから人を支える側にいる"],
@@ -543,6 +553,8 @@ function apply(s,a){
   /* 盾を 1 枚割る。盾は持ち主の手札へ。S・トリガーならただで発動する */
   const brk=sd=>{const id=s.shield[sd].pop();if(!id)return false;E("shield",{side:sd,id,left:s.shield[sd].length});const c=card(s,id);
     if(c.st&&c.t==="s"){s.grave[sd].push(id);E("strigger",{side:sd,id});return doEff(sd,c.e,c.v,c)}
+    if(c.st&&c.t==="m"&&!c.star){const i=s.mon[sd].indexOf(null);if(i>=0){s.mon[sd][i]={id,atk:c.atk,done:false};E("strigger",{side:sd,id});E("summon",{side:sd,slot:i,id,star:false});
+      if(c.on){E("ability",{side:sd,slot:i,id});return doEff(sd,c.on,c.ov,c)}return false}}
     if(c.st&&c.t==="t"){const i=s.trap[sd].indexOf(null);if(i>=0){s.trap[sd][i]=id;E("strigger",{side:sd,id});E("set",{side:sd,slot:i,id});return false}}
     s.hand[sd].push(id);E("shieldhand",{side:sd});return false};
   const endByCount=()=>{s.over=s.lp.A===s.lp.B?"draw":s.lp.A>s.lp.B?"A":"B";E("over",{win:s.over})};
@@ -1176,6 +1188,52 @@ async function banner(m,s,colVar="--gold",hold=650){
   await sleep(280+hold);
   await new Promise(r=>{const a=d.animate([{opacity:1,transform:"none"},{opacity:0,transform:"translateX(40px)"}],{duration:RM?1:220});a.onfinish=r});d.remove();
 }
+/* ---- 盾が割れる演出 ---- */
+async function shieldBreakFx(sd,left){
+  const box=SHel(sd),icons=box?box.querySelectorAll("i"):[],el=icons.length?icons[icons.length-1]:box;
+  if(!el){await sleep(300);return}
+  const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,W=css("--water");
+  el.animate([{transform:"scale(1)",filter:"brightness(1)"},{transform:"scale(2.6) rotate(-12deg)",filter:"brightness(3)",offset:.35},{transform:"scale(.2) rotate(40deg)",opacity:0}],{duration:RM?1:520,fill:"forwards"});
+  const cr=document.createElement("div");cr.className="crack";cr.style.left=cx+"px";cr.style.top=cy+"px";
+  cr.innerHTML=`<svg viewBox="-60 -60 120 120">${[...Array(7)].map((_,k)=>{let a=k/7*6.283+Math.random()*.5,x=0,y=0,d="M0 0";for(let t=0;t<4;t++){const L=8+Math.random()*10;a+=(Math.random()-.5)*.8;x+=Math.cos(a)*L;y+=Math.sin(a)*L;d+=` L${x.toFixed(1)} ${y.toFixed(1)}`}return `<path d="${d}"/>`}).join("")}</svg>`;
+  document.body.appendChild(cr);cr.animate([{opacity:0,transform:"translate(-50%,-50%) scale(.3)"},{opacity:1,transform:"translate(-50%,-50%) scale(1.4)",offset:.3},{opacity:0,transform:"translate(-50%,-50%) scale(2.2)"}],{duration:RM?1:700}).onfinish=()=>cr.remove();
+  await sleep(120);
+  const big={left:cx-40,top:cy-40,width:80,height:80};
+  shards(big,W);burst(cx,cy,"#ffffff",40,10);burst(cx,cy,W,70,12);ring(cx,cy,"#ffffff",10,10);ring(cx,cy,W,6,14);
+  const sl=document.createElement("div");sl.className="slash";sl.style.top=cy+"px";document.body.appendChild(sl);
+  sl.animate([{transform:"scaleX(0)",opacity:1},{transform:"scaleX(1)",opacity:1,offset:.4},{transform:"scaleX(1)",opacity:0}],{duration:RM?1:520,easing:"ease-out"}).onfinish=()=>sl.remove();
+  flash("#bfe3ff",.45);shake(16);
+  await banner("BREAK！",`${NM(sd)}の盾 のこり ${left} 枚`,"--water",620);
+}
+/* ---- S・トリガーの演出：暗転、回る光、札が飛び出して表になる、文字が一字ずつ落ちる、稲妻 ---- */
+async function sTriggerFx(c,sd){
+  const T=COL("trap"),G=css("--gold"),src=SHel(sd),sr=src?src.getBoundingClientRect():{left:innerWidth/2,top:innerHeight/2,width:0,height:0};
+  const ov=document.createElement("div");ov.className="stov";
+  ov.innerHTML=`<div class="rays"></div><div class="stcard">${cardHtml(c)}</div><div class="sttxt">${[..."S・TRIGGER"].map((ch,i)=>`<span style="--i:${i}">${ch}</span>`).join("")}</div><div class="stsub">${esc(NM(sd))}の「${esc(c.n)}」${c.t==="m"?"がただで場に出る":c.t==="t"?"がただで伏せられる":"がただで発動"}</div><svg class="bolts" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>`;
+  document.body.appendChild(ov);
+  const D=RM?1:1;
+  ov.animate([{opacity:0},{opacity:1}],{duration:RM?1:180,fill:"forwards"});
+  const rays=ov.querySelector(".rays");rays.animate([{transform:"translate(-50%,-50%) rotate(0deg) scale(.4)",opacity:0},{transform:"translate(-50%,-50%) rotate(140deg) scale(1.1)",opacity:1,offset:.35},{transform:"translate(-50%,-50%) rotate(360deg) scale(1.3)",opacity:.8}],{duration:RM?1:2200,fill:"forwards",easing:"cubic-bezier(.2,.8,.3,1)"});
+  const cd=ov.querySelector(".stcard"),cx=innerWidth/2,cy=innerHeight*.42,sx=sr.left+sr.width/2-cx,sy=sr.top+sr.height/2-cy;
+  cd.animate([{transform:`translate(calc(-50% + ${sx}px),calc(-50% + ${sy}px)) rotateY(180deg) scale(.25)`,filter:"brightness(4)"},
+    {transform:"translate(-50%,-50%) rotateY(90deg) scale(1.5)",filter:"brightness(3)",offset:.45},
+    {transform:"translate(-50%,-50%) rotateY(0deg) scale(2.2)",filter:"brightness(1.6)",offset:.7},
+    {transform:"translate(-50%,-50%) rotateY(0deg) scale(2)",filter:"brightness(1)"}],{duration:RM?1:800,fill:"forwards",easing:"cubic-bezier(.2,.9,.3,1)"});
+  await sleep(380);
+  flash(T,.6);shake(18);
+  for(let k=0;k<3;k++)setTimeout(()=>{ring(cx,cy,k%2?G:T,9+k*3,10);burst(cx,cy,[T,G,"#ffffff"][k],80,12)},k*140);
+  const bolts=ov.querySelector(".bolts");
+  const zap=()=>{let x=Math.random()*100,y=0,d=`M${x} 0`;while(y<100){y+=6+Math.random()*10;x+=(Math.random()-.5)*14;d+=` L${x.toFixed(1)} ${Math.min(100,y).toFixed(1)}`}
+    const p=document.createElementNS("http://www.w3.org/2000/svg","path");p.setAttribute("d",d);bolts.appendChild(p);p.animate([{opacity:1},{opacity:0}],{duration:RM?1:260}).onfinish=()=>p.remove()};
+  if(!RM)for(let k=0;k<7;k++)setTimeout(zap,k*110+Math.random()*60);
+  ov.querySelectorAll(".sttxt span").forEach((sp,i)=>sp.animate([{transform:"translateY(-140px) scale(2.4) rotate(-20deg)",opacity:0},{transform:"translateY(8px) scale(.9)",opacity:1,offset:.7},{transform:"none",opacity:1}],{duration:RM?1:420,delay:RM?0:i*55,fill:"backwards",easing:"cubic-bezier(.3,1.4,.5,1)"}));
+  ov.querySelector(".stsub").animate([{opacity:0,transform:"translateY(14px)"},{opacity:1,transform:"none"}],{duration:RM?1:400,delay:RM?0:650,fill:"backwards"});
+  cd.querySelector(".card").animate([{boxShadow:`0 0 0 0 ${T}`},{boxShadow:`0 0 40px 12px ${T}`},{boxShadow:`0 0 14px 4px ${G}`}],{duration:900,iterations:2,direction:"alternate"});
+  await sleep(1500);
+  ov.animate([{opacity:1},{opacity:0}],{duration:RM?1:280,fill:"forwards"}).onfinish=()=>ov.remove();
+  cd.animate([{transform:"translate(-50%,-50%) scale(2)"},{transform:"translate(-50%,-50%) scale(.3) translateY(260px)",opacity:0}],{duration:RM?1:280,fill:"forwards"});
+  await sleep(300);
+}
 function float(el,text,colVar,size=40){
   if(!el)return;const {x,y}=ctr(el),d=document.createElement("div");d.className="float";d.textContent=text;d.style.color=`var(${colVar})`;d.style.fontSize=size+"px";d.style.left=x+"px";d.style.top=y+"px";document.body.appendChild(d);
   d.animate([{transform:"translate(-50%,-50%) scale(.4)",opacity:0},{transform:"translate(-50%,-90%) scale(1.25)",opacity:1,offset:.2},{transform:"translate(-50%,-160%) scale(1)",opacity:0}],{duration:1100,easing:"ease-out"}).onfinish=()=>d.remove();
@@ -1273,8 +1331,8 @@ async function fx(ev){
       if(el){const p=ctr(el);burst(p.x,p.y,css("--bad"),Math.min(90,20+ev.amt/40),8)}
       shake(Math.min(20,4+ev.amt/150));if(sd===my)flash(css("--bad"),Math.min(.5,.15+ev.amt/8000));await sleep(800);break}
     case "ability":{render(s);const el=Z(`${sd}m${ev.slot}`);if(el){const p=ctr(el);ring(p.x,p.y,css("--gold"),6,6)}await banner("出たとき",card(s,ev.id).n+"\n"+card(s,ev.id).od,"--gold",650);break}
-    case "shield":{render(prev);const el=SHel(sd);if(el){const p=ctr(el);burst(p.x,p.y,css("--water"),60,9);ring(p.x,p.y,"#fff",8,8)}shake(12);flash("#9fd0ff",.3);await banner("盾をブレイク",`${NM(sd)}の盾 のこり ${ev.left} 枚`,"--water",650);render(s);break}
-    case "strigger":{render(s);flash(COL("trap"),.5);shake(10);await banner("S・トリガー！",`${NM(sd)}の「${card(s,ev.id).n}」がただで発動`,"--trap",1000);break}
+    case "shield":{render(prev);await shieldBreakFx(sd,ev.left);render(s);break}
+    case "strigger":{render(s);await sTriggerFx(card(s,ev.id),sd);break}
     case "shieldadd":{render(s);const el=SHel(sd);if(el){const p=ctr(el);ring(p.x,p.y,css("--water"),6,6)}await banner("盾が増えた",`${NM(sd)}の盾 +${ev.n}`,"--water",550);break}
     case "weaken":{render(s);document.querySelectorAll(`[data-z^="${sd}m"]`).forEach(el=>{if(!el.querySelector(".card"))return;float(el,"-"+ev.amt,"--bad",26)});shake(6);await sleep(650);break}
     case "halve":{render(s);const el=Z(`${sd}m${ev.slot}`);if(el)float(el,"半分","--bad",30);shake(8);await sleep(650);break}
