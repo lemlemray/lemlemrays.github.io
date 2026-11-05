@@ -68,6 +68,7 @@ button:focus-visible,.zone:focus-visible,input:focus-visible{outline:2px solid v
 .card.spell{--c:var(--gold);background:#E8E0C8} .card.trap{--c:var(--trap);background:#E9DCE3}
 .card .nm{font-size:calc(var(--cw)*.115);font-weight:800;line-height:1.2;min-height:2.4em;display:flex;align-items:center}
 .shs{display:inline-flex;gap:2px;align-items:center}.shs i{width:9px;height:12px;border-radius:2px 2px 5px 5px;background:var(--water);box-shadow:inset 0 0 0 1px #fff6;display:block}.shs em{font-style:normal;font-size:11px;color:var(--bad)}
+.lk .card{filter:grayscale(.85) brightness(.7)}.lk{cursor:pointer}
 .lvrow{display:flex;gap:6px}.lvrow .lv{flex:1;padding:8px 2px;font-size:13px;background:transparent;color:var(--ink);border:1px solid var(--rim)}.lvrow .lv.on{background:var(--gold);color:var(--sumi);border-color:var(--gold);font-weight:800}
 .card .art{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}.card .art svg{width:100%;height:100%;overflow:visible}
 .card .ft{display:flex;justify-content:space-between;align-items:center;width:100%;font-family:var(--f-body);font-size:calc(var(--cw)*.12);font-weight:700;font-variant-numeric:tabular-nums}
@@ -248,9 +249,53 @@ const CARDS=[
  {n:"養生シート",g:"養",t:"s",e:"shieldadd",v:1,st:1,d:"山札の上から 1 枚を、自分の盾に加える。",f:"施工管理の現場では、まず建物を養生シートで守る。守りを一枚ふやす。"},
  {n:"解体工事",g:"壊",t:"s",e:"shieldbreak",v:1,d:"相手の盾を 1 枚割る。",f:"建てる仕事は、こわす仕事を知ることから。相手の守りを一枚はがす。"},
  {n:"二条城の石垣",g:"垣",t:"s",e:"shieldadd",v:2,st:1,d:"山札の上から 2 枚を、自分の盾に加える。",rare:"SR",f:"本丸の現場で見上げた石垣。何百年も城を守ってきた。"},
+ // ---- レアカード（73-110）。どれも島津耕造の経験から。問題を解くか、夜の主に勝つと、ランダムで手に入る ----
+ // R
+ {n:"太宰治賞の封筒",g:"封",t:"s",e:"draw",v:3,d:"山札から 3 枚引く。",rare:"R",f:"小説を入れて、太宰治賞に送った封筒。書いたものを送り出すと、次の手がやってくる。"},
+ {n:"オモコロへの名乗り",g:"笑",t:"s",e:"arrow",v:1000,d:"相手の命を 1000 減らす。",rare:"R",f:"島津耕造として、オモコロのライターに名乗り出た。面白さは、まっすぐ効く。"},
+ {n:"業務委託の原稿",g:"稿",t:"m",a:"water",atk:1700,pay:1,rare:"R",f:"innovaTopia の業務委託で書く記事。書いた分だけ、次の仕事につながる。"},
+ {n:"喫茶店の PV",g:"珈",t:"m",a:"fire",atk:1800,on:"heal",ov:600,od:"自分の命を 600 ふやす",rare:"R",f:"勝田台の喫茶店のために作った宣伝動画。コーヒーの香りで、ひと休み。"},
+ {n:"写真三十五枚",g:"写",t:"m",a:"wind",atk:1600,on:"draw",ov:1,od:"山札から 1 枚引く",rare:"R",f:"八千代台北を歩いて撮った 35 枚の写真。歩けば、何かが見つかる。"},
+ {n:"CAD図面",g:"寸",t:"t",e:"pit",d:"相手が攻撃力 1500 以上の作品を出したら、その作品を倒す。",rare:"R",f:"施工管理のころに引いた CAD 図面。寸法の合わないものは、現場に通さない。"},
+ {n:"定例会議の目録",g:"目",t:"s",e:"tutor",d:"山札の中でいちばん強い作品を 1 枚、手札に加える。",rare:"R",f:"KS企画の週ごとの定例会議でつくる目録。いちばん大事な議題を、まず出す。"},
+ {n:"カセットテープ",g:"巻",t:"t",e:"record",d:"自分の作品が戦いで倒されたら、その作品を手札にもどす。",rare:"R",f:"カセットテープで録音し、編集する。残した音は、何度でも巻きもどせる。"},
+ {n:"深夜の議論",g:"夜",t:"s",e:"buffall",v:300,d:"自分の場の作品すべての攻撃力を +300（ずっと）。",rare:"R",f:"夜中の 0 時から 4 時、友人と通話して議論し、作品を磨く。"},
+ {n:"行人",g:"行",t:"t",e:"counter",d:"相手が言葉の札を使ったら、それを打ち消す（効かなくなる）。",rare:"R",f:"影響を受けた漱石の後期作品『行人』。言葉は、相手にまっすぐには届かない。"},
+ {n:"球体の温室",g:"球",t:"t",e:"guardheal",d:"相手の作品が攻撃してきたら、その攻撃を止めて、自分の命を 500 ふやす。",rare:"R",f:"サナトリウムの、ガラスの球体の温室。守られて、息をつく。"},
+ {n:"AI議事録",g:"議",t:"s",e:"expose",d:"相手が伏せている罠を、すべて壊す。",rare:"R",f:"ワケルに加える、話者を聞き分ける議事録の機能。だれが何を伏せたか、ぜんぶ書き出す。"},
+ // SR
+ {n:"ローカルの素御",g:"素",t:"m",a:"wind",atk:2000,on:"draw",ov:1,od:"山札から 1 枚引く",slay:"島津耕造",rare:"SR",f:"外の API から、手元のマシンで動くように移す素御。家の中で育っても、やっぱり島津耕造にだけは負けない。"},
+ {n:"樹冠の展示室",g:"冠",t:"m",a:"wind",atk:2100,on:"buffall",ov:300,od:"自分の場の作品すべての攻撃力を +300",rare:"SR",f:"大蛙美術館の、樹冠ごとに作家を分けた展示室。一人ひとりに、光が当たる。"},
+ {n:"色分けの哲学",g:"色",t:"s",e:"buffall",v:500,d:"自分の場の作品すべての攻撃力を +500（ずっと）。",rare:"SR",f:"10の暮らしで、世帯ごとに色を分けた考え方。ちがう色が並ぶほど、全体が引き立つ。"},
+ {n:"シナリオゲーム化",g:"遊",t:"s",e:"revive",d:"自分の倒れた作品のうち、いちばん強いものを場によみがえらせる（場がいっぱいなら手札へ）。",rare:"SR",f:"小説「城の図面」を PC 向けのシナリオゲームにする計画。物語は、何度でもやり直せる。"},
+ {n:"設計台帳",g:"台",t:"t",e:"mirror",d:"相手の作品が攻撃してきたら、その作品を倒す。",rare:"SR",f:"建築動画の指示文で、図面とパースの食いちがいを正す台帳。つじつまの合わない攻撃は、はね返る。"},
+ {n:"八千代市への企画書",g:"企",t:"s",e:"shieldadd",v:2,st:1,d:"山札の上から 2 枚を、自分の盾に加える。",rare:"SR",f:"電柱に詩をかかげるために、八千代市へ出す企画書。町の後ろだてが、盾になる。"},
+ {n:"読み上げ対応",g:"読",t:"t",e:"guarddraw",d:"相手の作品が攻撃してきたら、その攻撃を止めて、山札から 1 枚引く。",rare:"SR",f:"カルテ管理ソフトを、画面読み上げに対応させる構想。見えない攻撃も、音で先に分かる。"},
+ {n:"浮く塔",g:"浮",t:"m",a:"fire",atk:2400,pierce:1,rare:"SR",f:"スタジアムの上に浮かぶ塔。足もとの罠は、とどかない。"},
+ {n:"灯守の家",g:"守",t:"m",a:"water",atk:2200,on:"shieldadd",ov:1,od:"山札の上から 1 枚を、自分の盾に加える",rare:"SR",f:"水冠の塔のそばの、灯を守る家。守りが一枚ふえる。"},
+ {n:"句集十五句",g:"膿",t:"s",e:"weaken",v:500,d:"相手の場の作品すべての攻撃力を -500（ずっと）。",rare:"SR",f:"句集「キャラメルポップコーンは膿む」の 15 句。甘いものから、じわじわ膿んでいく。"},
+ {n:"創業計画書",g:"創",t:"s",e:"draw",v:3,d:"山札から 3 枚引く。",rare:"SR",f:"商工会議所で相談したあと、自分なりに書く創業計画書。書けば、道が見えてくる。"},
+ {n:"アンビエント",g:"音",t:"t",e:"guard",d:"相手の作品が攻撃してきたら、その攻撃を止める（だれも倒れない）。",rare:"SR",f:"アンビエント音楽の制作。音が場をしずめ、争いを止める。"},
+ {n:"任侠",g:"侠",t:"m",a:"fire",atk:1900,on:"bolt",od:"相手の場でいちばん強い作品を倒す",rare:"SR",f:"任侠映画と、高倉健へのあこがれ。強きをくじく。"},
+ {n:"レム",g:"レ",t:"m",a:"water",atk:2000,double:1,rare:"SR",f:"Discord などで名乗る、もうひとつの名前。ふたつの名で、二度動く。"},
+ {n:"週間ダイジェスト",g:"週",t:"s",e:"perMon",v:500,d:"自分の場の作品 1 つにつき、相手の命を 500 減らす。",rare:"SR",f:"innovaTopia に提案した、一週間のニュースをまとめる AI 動画。まとめる数が多いほど強い。"},
+ {n:"MVの絵コンテ",g:"絵",t:"s",e:"buff",v:1000,d:"自分の場でいちばん強い作品の攻撃力を +1000（ずっと）。",rare:"SR",f:"引き受けた曲の MV のために描く絵コンテ。一つの場面に、力を集める。"},
+ // UR
+ {n:"自分の運動",g:"運",t:"m",a:"wind",atk:3200,star:1,on:"buffall",ov:500,od:"自分の場の作品すべての攻撃力を +500",rare:"UR",f:"自由率俳句、AI 動画、小説、建築を軸に起こす、自分の運動。仲間全員が強くなる。"},
+ {n:"師との出会い",g:"師",t:"s",e:"heal",v:3000,d:"自分の命を 3000 ふやす。",rare:"UR",f:"師に見出されて、目が覚めた。生きかえるほどの出会い。"},
+ {n:"第六感の付箋",g:"六",t:"m",a:"wind",atk:3000,star:1,on:"draw",ov:2,od:"山札から 2 枚引く",rare:"UR",f:"付箋の一言「音楽があり 匂いがある 五感にうったえる 建築」。その写真につけた名は「第六感」。"},
+ {n:"模倣しない",g:"新",t:"t",e:"counter",d:"相手が言葉の札を使ったら、それを打ち消す（効かなくなる）。",rare:"UR",f:"「AI は新たに作るときに意味がある。模倣は AI の意味をなさない」。まねごとの言葉は効かない。"},
+ {n:"前作を越える",g:"越",t:"s",e:"buffall",v:1000,d:"自分の場の作品すべての攻撃力を +1000（ずっと）。",rare:"UR",f:"前の作品よりよいものしか作らない。場の全員が、前の自分を越える。"},
+ {n:"使命",g:"命",t:"m",a:"fire",atk:3500,star:1,pierce:1,blast:500,rare:"UR",f:"肉体が滅びても続ける、と信じる使命。何にも止められない。"},
+ {n:"匂いのない花",g:"花",t:"t",e:"guarddraw",d:"相手の作品が攻撃してきたら、その攻撃を止めて、山札から 1 枚引く。",rare:"UR",f:"創作のテーマ「匂いのない花を嗅ぐ」。とどかなかった攻撃の向こうに、何かが残る。"},
+ {n:"㍕（しまづ）",g:"㍕",t:"m",a:"water",atk:2900,star:1,double:1,joke:1,rare:"UR",f:"友人とつくった、もう一人の自分。口ぐせは「にゃん」「そんなあ」。負けても笑いに変える。"},
+ {n:"夜札",g:"札",t:"s",e:"shieldbreak",v:2,d:"相手の盾を 2 枚割る。",rare:"UR",f:"いま遊んでいる、この札遊びそのもの。守りを二枚まとめて割る。"},
+ {n:"AIでしか生まれない美",g:"美",t:"m",a:"fire",atk:3600,star:1,on:"weaken",ov:600,od:"相手の場の作品すべての攻撃力を -600",rare:"UR",f:"AI でしか創造し得ない美がある。この命題と心中するつもりでいる。"},
 ];
 const BASE_N=26, DMIN=20, DMAX=30;
-const REWARDS=[...Array(20).keys()].map(i=>26+i), PER=3;
+const REWARDS=[...Array(20).keys()].map(i=>26+i), PER=2;
+const POOL=()=>CARDS.map((c,i)=>i).filter(i=>CARDS[i].rare); // レアカードすべて
+function pickRare(tiers,own){const w={R:6,SR:3,UR:1};const left=POOL().filter(i=>tiers.includes(CARDS[i].rare)&&!own.has(i));if(!left.length)return null;let t=left.reduce((a,i)=>a+w[CARDS[i].rare],0)*Math.random();for(const i of left){t-=w[CARDS[i].rare];if(t<=0)return i}return left[left.length-1]}
 const WINS=[...[...Array(14).keys()].map(i=>46+i),67,68,69,72], FREE=[60,61,62,63,64,65,66,70,71], SHIELDS=5;
 /* 夜の主の強さ：デッキ（札の強さ）が変わる。勝つと、その強さに応じたレアカード */
 const LV=[
@@ -649,7 +694,7 @@ let winGift;
 function giveWinGift(){
   if(winGift!==undefined)return;winGift=null;const tier=LV[cpuLv()].r;if(!tier)return;
   const own=new Set(owned()),order=["UR","SR","R"],from=order.slice(order.indexOf(tier));
-  for(const r of from){const left=WINS.filter(i=>CARDS[i].rare===r&&!own.has(i));if(left.length){winGift=left[Math.floor(Math.random()*left.length)];save.owned=[...new Set([...(save.owned||[]),winGift])];persist();return}}
+  for(const r of from){const left=POOL().filter(i=>CARDS[i].rare===r&&!own.has(i));if(left.length){winGift=left[Math.floor(Math.random()*left.length)];save.owned=[...new Set([...(save.owned||[]),winGift])];persist();return}}
 }
 function again(){clearTimeout(cpuTimer);if(mode==="local"){code=String(Math.random());actions=[];my=newState(seed(),decks).act;rebuild(false);showCover(my);return}if(mode==="cpu"){code=String(Math.random());winGift=undefined}else g++;actions=[];share();rebuild(false)}
 function toLobby(){clearTimeout(cpuTimer);queue=[];pjStop();if(named){named.leave().catch(()=>{});named=null}mode=null;screen=null;render()}
@@ -657,7 +702,7 @@ function toLobby(){clearTimeout(cpuTimer);queue=[];pjStop();if(named){named.leav
 /* ================= render ================= */
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 /* ================= chibi card art (inline SVG, no images) ================= */
-const PIC={"電柱の詩路":"pole","大蛙美術館":"frog","膿む映画館":"popcorn","コロッセオの塔":"tower","少し外に出られる家":"house","二つの器の家":"bowl","10の暮らし":"apartment","水冠の塔":"tower","幾何学的滝行建築":"falls","素御":"phone","斜めの家":"house","森の情景":"tree","ボロメオの寝所":"knot","二条城 本丸":"castle","自由率俳句":"scroll","祈りの手":"hand","豆腐の角":"tofu","AIは筆":"brush","志向縁占い":"crystal","城の図面":"scroll","ネットリテラシー":"phone","一本の傘":"umbrella","ふたつの窓":"window","干された町":"laundry","ワケル":"mic","街の幾何学":"apartment","箱をずらした家":"boxes","英会話ラボ":"mic","路地の洗濯物":"laundry","ここに在る館":"house","円錐台の集合住宅":"cone","気分の便り":"letter","温室のサナトリウム":"dome","語る画像":"frame","パヴァーヌの建築":"note","あわいの家":"house","問いとト書き":"scroll","晴盲のカルテ":"letter","Japanese Lab":"mic","顕現志向":"newspaper","EN新聞":"newspaper","概念象形アート":"frame","腐土の間":"tree","三本の塔":"towers","顕現主義":"crystal","島津耕造":"person","クルカジ（みかん）":"mikan","みかんの建築動画":"frame","みかんの祈り":"hand","みかんのログ":"scroll","みかんの歩合":"mikan","消尽":"crystal","エラー":"phone","恩返し":"hand","養生シート":"laundry","解体工事":"boxes","二条城の石垣":"castle","亀川安行":"brush","寺社の図面":"castle","朝までの配信":"phone","できたよ帳":"letter","文庫めくり":"scroll","マテーラの洞窟":"dome","空想力学":"note","敷地から立つ建築":"boxes","八千代台駅前":"apartment","こたえ帳":"letter","住む機会を作る":"house","KS計画研究所":"towers","前衛":"crystal","タイへの旅":"frame"};
+const PIC={"電柱の詩路":"pole","大蛙美術館":"frog","膿む映画館":"popcorn","コロッセオの塔":"tower","少し外に出られる家":"house","二つの器の家":"bowl","10の暮らし":"apartment","水冠の塔":"tower","幾何学的滝行建築":"falls","素御":"phone","斜めの家":"house","森の情景":"tree","ボロメオの寝所":"knot","二条城 本丸":"castle","自由率俳句":"scroll","祈りの手":"hand","豆腐の角":"tofu","AIは筆":"brush","志向縁占い":"crystal","城の図面":"scroll","ネットリテラシー":"phone","一本の傘":"umbrella","ふたつの窓":"window","干された町":"laundry","ワケル":"mic","街の幾何学":"apartment","箱をずらした家":"boxes","英会話ラボ":"mic","路地の洗濯物":"laundry","ここに在る館":"house","円錐台の集合住宅":"cone","気分の便り":"letter","温室のサナトリウム":"dome","語る画像":"frame","パヴァーヌの建築":"note","あわいの家":"house","問いとト書き":"scroll","晴盲のカルテ":"letter","Japanese Lab":"mic","顕現志向":"newspaper","EN新聞":"newspaper","概念象形アート":"frame","腐土の間":"tree","三本の塔":"towers","顕現主義":"crystal","島津耕造":"person","クルカジ（みかん）":"mikan","みかんの建築動画":"frame","みかんの祈り":"hand","みかんのログ":"scroll","みかんの歩合":"mikan","消尽":"crystal","エラー":"phone","恩返し":"hand","養生シート":"laundry","解体工事":"boxes","二条城の石垣":"castle","太宰治賞の封筒":"letter","オモコロへの名乗り":"phone","業務委託の原稿":"scroll","喫茶店の PV":"frame","写真三十五枚":"frame","CAD図面":"scroll","定例会議の目録":"newspaper","カセットテープ":"mic","深夜の議論":"phone","行人":"scroll","球体の温室":"dome","AI議事録":"mic","ローカルの素御":"phone","樹冠の展示室":"tree","色分けの哲学":"apartment","シナリオゲーム化":"phone","設計台帳":"scroll","八千代市への企画書":"letter","読み上げ対応":"mic","浮く塔":"tower","灯守の家":"house","句集十五句":"popcorn","創業計画書":"newspaper","アンビエント":"note","任侠":"person","レム":"crystal","週間ダイジェスト":"frame","MVの絵コンテ":"frame","自分の運動":"towers","師との出会い":"hand","第六感の付箋":"letter","模倣しない":"window","前作を越える":"brush","使命":"tower","匂いのない花":"tree","㍕（しまづ）":"person","夜札":"boxes","AIでしか生まれない美":"brush","亀川安行":"brush","寺社の図面":"castle","朝までの配信":"phone","できたよ帳":"letter","文庫めくり":"scroll","マテーラの洞窟":"dome","空想力学":"note","敷地から立つ建築":"boxes","八千代台駅前":"apartment","こたえ帳":"letter","住む機会を作る":"house","KS計画研究所":"towers","前衛":"crystal","タイへの旅":"frame"};
 const PAL={fire:["#FFD9C8","#E0603F"],water:["#D3E5FA","#4386D6"],wind:["#D6F0CB","#4FA86F"],s:["#F7E8B8","#C9952E"],t:["#F2D3E2","#B0507E"]};
 const K="#3A2E2A";
 function face(cx,cy,s,g,h){
@@ -892,8 +937,9 @@ function lobby(){
   app.innerHTML=`<div style="display:flex;flex-direction:column;gap:14px">
     <div class="panel"><h2>あなたのデッキ</h2><p class="hint">デッキは、対戦で使うカードの束です。持っているカードから ${DMIN}〜${DMAX} 枚をえらんで組みます。</p>
       <div class="row" style="font-size:14px"><span>デッキ <b class="count">${myDeck().length}</b> 枚</span><span class="meta">持っているカード ${owned().length} / ${CARDS.length}</span></div>
+      <p class="hint" style="margin:0">レアカード ${["R","SR","UR"].map(r=>{const all=CARDS.map((c,i)=>i).filter(i=>CARDS[i].rare===r),have=new Set(owned());return `${r} ${all.filter(i=>have.has(i)).length}/${all.length}`}).join("　")}。手に入れ方は「デッキを組む」の下のほうで見られます。</p>
       <button id="toDeck" class="ghost">デッキを組む</button></div>
-    <div class="panel"><h2>問題を解いてカードを手に入れる</h2><p class="hint">島津耕造という人の性質や考え方をたずねる問題です。解くほど強いカードが手に入ります（R → SR → UR）。最後のカードは攻撃力 4000。</p>
+    <div class="panel"><h2>問題を解いてカードを手に入れる</h2><p class="hint">島津耕造という人の性質や考え方をたずねる問題です。2 問正解するごとに、まだ持っていないレアカードが 1 枚、ランダムで手に入ります（R が出やすく、UR はめったに出ない）。</p>
       <div class="row" style="font-size:14px"><span>正解 <b class="count">${solvedN()}</b> / ${QUIZ.length} 問</span><span class="meta">${PER} 問正解するごとにカード 1 枚</span></div>
       <button id="toQuiz" ${solvedN()>=QUIZ.length?"class=\"ghost\"":""}>${solvedN()>=QUIZ.length?"全問正解しました":"問題に挑む"}</button></div>
     <div class="panel hl"><h2>恋人や友だちと、1 台で対戦する</h2><p class="hint">いちばん確実な遊び方です。ネットも、アカウントも、招待もいりません。自分のターンが終わったら、スマホを相手に渡すだけ。渡すたびに目かくしの画面が出ます。</p><button id="local">1 台で対戦をはじめる</button></div>
@@ -936,6 +982,10 @@ function lobby(){
 /* ================= deck builder ================= */
 let draftDeck=[],peek=null;
 const solvedN=()=>solvedList().length;
+function howGet(i){
+  if(CARDS[i].rare){const l=LV.find(l=>l.r===CARDS[i].rare);return `問題を解く／「${l.n}」${l.r==="UR"?"":"以上"}に勝つ`}
+  return "はじめから";
+}
 function deckScreen(){
   hdr.hidden=true;
   const own=owned(),inD=new Set(draftDeck),n=draftDeck.length,ok=n>=DMIN&&n<=DMAX;
@@ -943,17 +993,22 @@ function deckScreen(){
   const group=(t,label)=>{const ids=own.filter(i=>CARDS[i].t===t);
     return `<h3 class="dk-h">${label}<span class="meta">　デッキに ${ids.filter(i=>inD.has(i)).length} / ${ids.length}</span></h3><div class="dk-grid">${ids.map(i=>
       `<div class="zone h dk ${inD.has(i)?"in":"out"}" data-k="${i}" role="button" tabindex="0" aria-pressed="${inD.has(i)}">${cardHtml(CARDS[i])}${inD.has(i)?'<span class="tag go bot">デッキ</span>':""}${newSet.has(i)?'<span class="tag win top">NEW</span>':""}</div>`).join("")}</div>`};
+  const ownSet=new Set(own),locked=[...CARDS.keys()].filter(i=>!ownSet.has(i)).sort((a,b)=>"R SR UR".indexOf(CARDS[a].rare)-"R SR UR".indexOf(CARDS[b].rare));
+  const lockedHtml=locked.length?`<div class="panel"><h3 class="dk-h">まだ持っていないカード<span class="meta">　${locked.length} 枚</span></h3><p class="hint" style="margin:0">タップすると、手に入れ方が出ます。</p><div class="dk-grid">${locked.map(i=>`<div class="zone h lk" data-lk="${i}" role="button" tabindex="0">${cardHtml(CARDS[i])}<span class="tag done bot">${esc(howGet(i))}</span></div>`).join("")}</div></div>`:"";
   const pc=peek!=null?CARDS[peek]:null;
-  const info=pc?`<div class="sheet">${cardHtml(pc)}<div class="tx"><b>${esc(pc.n)}</b><span>${pc.t==="m"?`作品・${ATTR[pc.a]}・攻撃力 ${pc.atk}${pc.star?"<br>★ 生け贄が必要":""}${abHtml(pc)}`:`${TYPE[pc.t]}：${esc(pc.d)}`}</span>${pc.f?`<span class="hint">${esc(pc.f)}</span>`:""}<span style="color:var(${inD.has(peek)?"--gold":"--mute"})">${inD.has(peek)?"デッキに入っています":"デッキに入っていません"}</span></div></div>`:`<p class="hint">カードをタップすると、デッキに入れたり外したりできます。金色の「デッキ」がついているのが、いま入っているカードです。</p>`;
+  const pcLocked=pc&&!ownSet.has(peek);
+  const info=pcLocked?`<div class="sheet">${cardHtml(pc)}<div class="tx"><b>${esc(pc.n)}</b><span>${pc.t==="m"?`作品・${ATTR[pc.a]}・攻撃力 ${pc.atk}${abHtml(pc)}`:`${TYPE[pc.t]}：${esc(pc.d)}`}</span>${pc.f?`<span class="hint">${esc(pc.f)}</span>`:""}<span style="color:var(--gold)">まだ持っていません。手に入れ方：${esc(howGet(peek))}</span></div></div>`:pc?`<div class="sheet">${cardHtml(pc)}<div class="tx"><b>${esc(pc.n)}</b><span>${pc.t==="m"?`作品・${ATTR[pc.a]}・攻撃力 ${pc.atk}${pc.star?"<br>★ 生け贄が必要":""}${abHtml(pc)}`:`${TYPE[pc.t]}：${esc(pc.d)}`}</span>${pc.f?`<span class="hint">${esc(pc.f)}</span>`:""}<span style="color:var(${inD.has(peek)?"--gold":"--mute"})">${inD.has(peek)?"デッキに入っています":"デッキに入っていません"}</span></div></div>`:`<p class="hint">カードをタップすると、デッキに入れたり外したりできます。金色の「デッキ」がついているのが、いま入っているカードです。</p>`;
   app.innerHTML=`<div class="stage">
     <div class="guide ${ok?"":"wait"}" style="justify-content:space-between"><span>デッキ <span style="font-size:20px">${n}</span> 枚 ${ok?"":n<DMIN?`（あと ${DMIN-n} 枚入れてください）`:`（${n-DMAX} 枚多いです）`}</span><span class="meta" style="color:inherit">${DMIN}〜${DMAX} 枚</span></div>
     <div class="panel">${info}</div>
     <div class="panel">${group("m","作品")}${group("s","言葉")}${group("t","罠")}</div>
+    ${lockedHtml}
     <div class="row" style="position:sticky;bottom:calc(env(safe-area-inset-bottom,0px) + 8px)"><button id="dkSave" ${ok?"":"disabled"}>このデッキで決定</button><button id="dkBack" class="ghost">やめる</button></div>
     <button id="dkReset" class="ghost" style="font-size:13px">はじめのデッキにもどす</button>
   </div>`;
   app.querySelectorAll(".dk").forEach(el=>{const go=()=>{const k=+el.dataset.k;peek=k;draftDeck=inD.has(k)?draftDeck.filter(i=>i!==k):[...draftDeck,k];deckScreen()};
     el.addEventListener("click",go);el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}})});
+  app.querySelectorAll(".lk").forEach(el=>el.addEventListener("click",()=>{peek=+el.dataset.lk;deckScreen();window.scrollTo({top:0,behavior:"smooth"})}));
   document.getElementById("dkSave").addEventListener("click",()=>{save.deck=draftDeck.slice();persist();screen=null;render()});
   document.getElementById("dkBack").addEventListener("click",()=>{screen=null;render()});
   document.getElementById("dkReset").addEventListener("click",()=>{draftDeck=BASE.slice();peek=null;deckScreen()});
@@ -961,15 +1016,15 @@ function deckScreen(){
 /* ================= quiz ================= */
 let quizState=null; // {i, order, picked, result, reward}
 const solvedList=()=>(save.solved3||[]).filter(i=>Number.isInteger(i)&&i>=0&&i<QUIZ.length);
-function earned(){const n=Math.floor(solvedList().length/PER);return REWARDS.slice(0,n)}
+const allRareOwned=()=>{const o=new Set(owned());return POOL().every(i=>o.has(i))};
 function nextQ(skip){const sv=new Set(solvedList());const left=QUIZ.map((_,i)=>i).filter(i=>!sv.has(i)&&i!==skip);if(!left.length)return sv.has(skip)||skip==null?-1:skip;return left[Math.floor(Math.random()*left.length)]}
 function quizScreen(){
   hdr.hidden=true;
   if(!quizState){const i=nextQ();quizState={i,picked:new Set(),result:null,reward:null,order:i<0?[]:shuffle([1,2,3,4],Math.random)}}
-  const {i}=quizState,n=solvedList().length,toNext=PER-(n%PER),gotAll=earned().length>=REWARDS.length;
+  const {i}=quizState,n=solvedList().length,toNext=PER-(n%PER),gotAll=allRareOwned();
   const prog=`<div class="qprog"><div style="width:${(n%PER)/PER*100}%"></div></div>
     <p class="meta" style="margin:0">正解 ${n} / ${QUIZ.length} 問　${gotAll?"カードはすべて手に入れました":`次のカードまで あと ${toNext} 問`}</p>
-    ${gotAll?"":(()=>{const nx=CARDS[REWARDS[earned().length]];return `<p style="margin:0;font-size:13px">次にもらえるのは <span class="rr r-${nx.rare}" style="position:static;display:inline-block">${nx.rare}</span> のカード。${nx.rare==="UR"?"とても強い、最上位のカード。":nx.rare==="SR"?"はじめのカードより強いカード。":"特別な力をもつカード。"}　解くほど強くなる（R → SR → UR）</p>`})()}`;
+    ${gotAll?"":`<p style="margin:0;font-size:13px">次にもらえるのは、まだ持っていないレアカードからランダムに 1 枚。R が出やすく、SR はときどき、UR はめったに出ません。</p>`}`;
   let body;
   if(i<0){
     body=`<div class="panel"><p class="res">全問正解</p><p>島津耕造にまつわる ${QUIZ.length} 問を、すべて解きました。</p></div>`;
@@ -999,9 +1054,9 @@ function quizScreen(){
   app.querySelectorAll(".qo").forEach(b=>b.addEventListener("click",()=>{
     const k=+b.dataset.k;
     if(k===1){
-      const before=earned().length;save.solved3=[...new Set([...solvedList(),i])];
-      const after=earned();let reward=null;
-      if(after.length>before){reward=after[after.length-1];save.owned=[...new Set([...(save.owned||[]),reward])]}
+      const prevN=solvedList().length;if(!Number.isInteger(save.qgot))save.qgot=Math.floor(prevN/3);
+      save.solved3=[...new Set([...solvedList(),i])];let reward=null;
+      if(Math.floor(solvedList().length/PER)>save.qgot){save.qgot++;reward=pickRare(["R","SR","UR"],new Set(owned()));if(reward!=null)save.owned=[...new Set([...(save.owned||[]),reward])]}
       persist();quizState.result="ok";quizState.reward=reward;quizScreen();
       const el=$("reward");
       if(el&&CARDS[reward].rare==="UR"){flash(css("--gold"),.6);shake(14)}
