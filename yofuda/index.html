@@ -79,6 +79,12 @@ button:focus-visible,.zone:focus-visible,input:focus-visible{outline:2px solid v
 .stov .sttxt span{display:inline-block}
 .stov .stsub{position:absolute;left:16px;right:16px;top:calc(42% + 200px);text-align:center;color:var(--gold);font-weight:700;font-size:15px}
 .stov .bolts{position:absolute;inset:0;width:100%;height:100%}.stov .bolts path{fill:none;stroke:#fff;stroke-width:.5;vector-effect:non-scaling-stroke;stroke-width:3px;filter:drop-shadow(0 0 6px #e7a6ff)}
+.fcap{position:absolute;z-index:48;white-space:normal;pointer-events:none;text-align:center;font-weight:800;font-size:14px;line-height:1.45;padding:7px 14px;border-radius:999px;background:rgba(14,12,18,.88);color:var(--ink);border:1px solid var(--rim);box-shadow:0 6px 24px rgba(0,0,0,.45);width:max-content}
+.fcap.me{border-color:var(--gold);color:#fff}.fcap.op{border-color:var(--bad)}.fcap.d{color:#ffb4a6}.fcap.tr{border-color:var(--trap);color:#f3c6dc}.fcap.h{background:var(--gold);color:var(--sumi);border-color:var(--gold)}.fcap.b{border-radius:12px}
+.arrowfx{position:fixed;inset:0;width:100vw;height:100vh;z-index:46;pointer-events:none;overflow:visible}.arrowfx text{font-weight:800;font-size:14px;paint-order:stroke;stroke:#000;stroke-width:3px}
+.tgt{position:fixed;width:58px;height:58px;border:3px dashed;border-radius:50%;z-index:46;pointer-events:none}
+.fcard{position:fixed;z-index:47;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:6px;--cw:96px;background:rgba(14,12,18,.9);border:1px solid var(--gold);border-radius:14px;padding:10px 12px;box-shadow:0 0 30px rgba(212,175,82,.35);max-width:260px}
+.fcard .card{position:relative}.fcard .who{font-size:12px;font-weight:800;color:var(--gold)}.fcard .d{font-size:13px;text-align:center;color:#fff;font-weight:700}
 .lvrow{display:flex;gap:6px}.lvrow .lv{flex:1;padding:8px 2px;font-size:13px;background:transparent;color:var(--ink);border:1px solid var(--rim)}.lvrow .lv.on{background:var(--gold);color:var(--sumi);border-color:var(--gold);font-weight:800}
 .card .art{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}.card .art svg{width:100%;height:100%;overflow:visible}
 .card .ft{display:flex;justify-content:space-between;align-items:center;width:100%;font-family:var(--f-body);font-size:calc(var(--cw)*.12);font-weight:700;font-variant-numeric:tabular-nums}
@@ -686,8 +692,9 @@ function act(a){
 }
 async function runQueue(){
   if(animating)return;animating=true;render(shown);
+  if(queue.length){const f=document.querySelector(".field");if(f){const r=f.getBoundingClientRect(),top=70;if(r.top<top||r.bottom>innerHeight-10){window.scrollTo({top:Math.max(0,scrollY+r.top-top),behavior:RM?"auto":"smooth"});await sleep(320)}}}
   while(queue.length){const ev=queue.shift();try{await fx(ev)}catch(e){}shown=ev.s}
-  shown=clone(cur);animating=false;
+  shown=clone(cur);animating=false;fieldCaptionHide();
   if(mode==="cpu"&&cur.over===my)giveWinGift();
   if(mode==="local"&&!cur.over&&cur.act!==my){my=cur.act;showCover(my)}
   render(shown);
@@ -1234,6 +1241,46 @@ async function sTriggerFx(c,sd){
   cd.animate([{transform:"translate(-50%,-50%) scale(2)"},{transform:"translate(-50%,-50%) scale(.3) translateY(260px)",opacity:0}],{duration:RM?1:280,fill:"forwards"});
   await sleep(300);
 }
+/* ---- できごとを、場の真ん中に字幕で出す ---- */
+let fcapEl=null,fcapT=0;
+function fieldCaption(l,ev){
+  const f=document.querySelector(".field");if(!f)return;const r=f.getBoundingClientRect();
+  if(!fcapEl||!fcapEl.isConnected){fcapEl=document.createElement("div");document.body.appendChild(fcapEl)}
+  clearTimeout(fcapT);
+  const who=ev&&(ev.side==="A"||ev.side==="B")?(ev.side===my?"me":"op"):"";
+  fcapEl.className="fcap "+(l.c||"")+" "+who;fcapEl.textContent=l.t;
+  fcapEl.style.left=(r.left+r.width/2+scrollX)+"px";fcapEl.style.top=(r.top+scrollY+6)+"px";fcapEl.style.maxWidth=Math.max(200,r.width-20)+"px";
+  fcapEl.getAnimations().forEach(a=>a.cancel());
+  fcapEl.animate([{opacity:0,transform:"translate(-50%,-6px) scale(.85)",filter:"blur(3px)"},{opacity:1,transform:"translate(-50%,0) scale(1.05)",filter:"blur(0)",offset:.6},{opacity:1,transform:"translate(-50%,0) scale(1)"}],{duration:RM?1:260,fill:"forwards",easing:"ease-out"});
+}
+function fieldCaptionHide(){clearTimeout(fcapT);fcapT=setTimeout(()=>{if(fcapEl)fcapEl.animate([{opacity:1},{opacity:0}],{duration:400,fill:"forwards"})},2200)}
+/* ---- 攻撃の矢印：攻める作品から、ねらう先まで光の線をのばす ---- */
+function arrowFx(A,T,col,label){
+  const NS="http://www.w3.org/2000/svg",svg=document.createElementNS(NS,"svg");svg.setAttribute("class","arrowfx");
+  const mx=(A.x+T.x)/2+(T.y-A.y)*.12,my=(A.y+T.y)/2-(T.x-A.x)*.12,id="ah"+Math.random().toString(36).slice(2,7);
+  svg.innerHTML=`<defs><marker id="${id}" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="${col}"/></marker></defs>
+    <path d="M${A.x} ${A.y} Q${mx} ${my} ${T.x} ${T.y}" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round" opacity=".25"/>
+    <path class="ln" d="M${A.x} ${A.y} Q${mx} ${my} ${T.x} ${T.y}" fill="none" stroke="${col}" stroke-width="4" stroke-linecap="round" marker-end="url(#${id})"/>
+    ${label?`<text x="${mx}" y="${my-8}" text-anchor="middle" fill="${col}">${label}</text>`:""}`;
+  document.body.appendChild(svg);const ln=svg.querySelector(".ln"),L=ln.getTotalLength();
+  ln.style.strokeDasharray=L;ln.animate([{strokeDashoffset:L},{strokeDashoffset:0}],{duration:RM?1:340,easing:"ease-out",fill:"forwards"});
+  const tg=document.createElement("div");tg.className="tgt";tg.style.left=T.x+"px";tg.style.top=T.y+"px";tg.style.borderColor=col;document.body.appendChild(tg);
+  tg.animate([{transform:"translate(-50%,-50%) scale(2)",opacity:0},{transform:"translate(-50%,-50%) scale(1)",opacity:1,offset:.4},{transform:"translate(-50%,-50%) scale(1) rotate(90deg)",opacity:0}],{duration:RM?1:900}).onfinish=()=>tg.remove();
+  svg.animate([{opacity:1},{opacity:1,offset:.7},{opacity:0}],{duration:RM?1:1000,fill:"forwards"}).onfinish=()=>svg.remove();
+}
+/* ---- 言葉の札を、場の真ん中に大きく出してから効かせる ---- */
+async function fieldCardFx(c,sd,verb){
+  const f=document.querySelector(".field");if(!f){await banner(c.n,c.d||"","--gold",500);return}
+  const r=f.getBoundingClientRect(),el=document.createElement("div");el.className="fcard";
+  el.innerHTML=`<div class="who">${esc(NM(sd))}が${verb}</div>${cardHtml(c)}<div class="d">${esc(c.d||"")}</div>`;
+  el.style.left=(r.left+r.width/2)+"px";el.style.top=(r.top+r.height/2)+"px";document.body.appendChild(el);
+  const fromY=sd===my?r.height*.6:-r.height*.6;
+  el.animate([{transform:`translate(-50%,calc(-50% + ${fromY}px)) scale(.4) rotate(${sd===my?-12:12}deg)`,opacity:0},{transform:"translate(-50%,-50%) scale(1.08)",opacity:1,offset:.45},{transform:"translate(-50%,-50%) scale(1)",opacity:1}],{duration:RM?1:420,fill:"forwards",easing:"cubic-bezier(.2,.9,.3,1.2)"});
+  await sleep(300);const p={x:r.left+r.width/2,y:r.top+r.height/2};ring(p.x,p.y,css("--gold"),7,8);burst(p.x,p.y,css("--gold"),50,8);
+  await sleep(900);
+  el.animate([{transform:"translate(-50%,-50%) scale(1)",opacity:1,filter:"brightness(1)"},{transform:"translate(-50%,-50%) scale(1.3)",opacity:0,filter:"brightness(3)"}],{duration:RM?1:260,fill:"forwards"}).onfinish=()=>el.remove();
+  await sleep(200);
+}
 function float(el,text,colVar,size=40){
   if(!el)return;const {x,y}=ctr(el),d=document.createElement("div");d.className="float";d.textContent=text;d.style.color=`var(${colVar})`;d.style.fontSize=size+"px";d.style.left=x+"px";d.style.top=y+"px";document.body.appendChild(d);
   d.animate([{transform:"translate(-50%,-50%) scale(.4)",opacity:0},{transform:"translate(-50%,-90%) scale(1.25)",opacity:1,offset:.2},{transform:"translate(-50%,-160%) scale(1)",opacity:0}],{duration:1100,easing:"ease-out"}).onfinish=()=>d.remove();
@@ -1287,7 +1334,7 @@ function evText(ev,prev){
 }
 async function fx(ev){
   const prev=shown,s=ev.s,sd=ev.side;
-  {const l=evText(ev,prev);if(l){logLines.push(l);if(logLines.length>60)logLines.shift()}}
+  {const l=evText(ev,prev);if(l){logLines.push(l);if(logLines.length>60)logLines.shift();fieldCaption(l,ev)}}
   switch(ev.k){
     case "turn": render(s);await banner(sd===my?"あなたのターン":NM(sd)+"のターン",`第${s.turn}ターン`,sd===my?"--gold":"--bad",550);break;
     case "draw":{if(ev.why==="pay")await banner("歩合",`${NM(sd)}が 1 枚引く`,"--fire",450);render(s);if(sd===my){const cs=[...document.querySelectorAll(".hand .zone")].slice(-ev.n);
@@ -1302,7 +1349,7 @@ async function fx(ev){
       await sleep(380);break}
     case "set":{render(s);const el=Z(`${sd}t${ev.slot}`);if(el){el.animate([{transform:"translateY(50px) rotateX(80deg)",opacity:0},{transform:"none",opacity:1}],{duration:RM?1:420,easing:"ease-out"});const p=ctr(el);ring(p.x,p.y,COL("trap"),4,3)}
       await sleep(480);break}
-    case "spell":{const c=card(s,ev.id);render(s);await banner("言葉　"+c.n,c.d,"--gold",500);break}
+    case "spell":{const c=card(s,ev.id);render(s);await fieldCardFx(c,sd,"言葉を使った");break}
     case "fizzle":await banner("不発","効く相手がいませんでした","--mute",300);break;
     case "heal":{render(s);const el=LPel(sd);if(el){const p=ctr(el);burst(p.x,p.y,css("--wind"),40,4);float(el,"+"+ev.amt,"--wind")}countLP(sd,prev.lp[sd],s.lp[sd]);await sleep(700);break}
     case "trapbreak":{render(prev);const el=Z(`${sd}t${ev.slot}`);if(el){const {r}=ctr(el);shards(r,COL("trap"));el.animate([{opacity:1},{opacity:0,transform:"scale(.3) rotate(-20deg)"}],{duration:RM?1:420,fill:"forwards"});float(el,"罠を破壊","--trap",24)}await sleep(500);render(s);break}
@@ -1311,7 +1358,8 @@ async function fx(ev){
     case "trap":{render(prev);const el=Z(`${sd}t${ev.slot}`),c=card(s,ev.id);
       if(el){el.style.zIndex=6;el.animate([{transform:"rotateY(0)"},{transform:"rotateY(90deg) scale(1.6)"},{transform:"rotateY(0) scale(1)"}],{duration:RM?1:380});const p=ctr(el);ring(p.x,p.y,COL("trap"),10,10)}
       flash(COL("trap"),.5);shake(10);await banner(`${NM(sd)}の罠発動！`,"「"+c.n+"」\n"+c.d,"--trap",1300);render(s);break}
-    case "attack":{render(prev);const a=Z(`${sd}m${ev.from}`),t=ev.to>=0?Z(`${opp(sd)}m${ev.to}`):LPel(opp(sd));
+    case "attack":{render(prev);const a=Z(`${sd}m${ev.from}`),t=ev.to>=0?Z(`${opp(sd)}m${ev.to}`):(prev.shield&&prev.shield[opp(sd)].length?SHel(opp(sd)):LPel(opp(sd)));
+      if(a&&t){arrowFx(ctr(a),ctr(t),sd===my?css("--gold"):css("--bad"),ev.to<0?(prev.shield&&prev.shield[opp(sd)].length?"盾へ":"命へ"):"");await sleep(380)}
       if(ev.to<0)await banner("ダイレクトアタック",card(prev,prev.mon[sd][ev.from].id).n,"--bad",250);
       if(a&&t){const A=ctr(a),T=ctr(t),dx=T.x-A.x,dy=T.y-A.y;a.style.zIndex=8;
         a.animate([{transform:"none"},{transform:`translate(${-dx*.08}px,${-dy*.08}px) scale(1.05)`,offset:.25},{transform:`translate(${dx*.82}px,${dy*.82}px) scale(1.2) rotate(${dx>0?6:-6}deg)`,offset:.55},{transform:"none"}],{duration:RM?1:640,easing:"cubic-bezier(.5,0,.3,1)"});
@@ -1330,7 +1378,7 @@ async function fx(ev){
     case "damage":{render(s);const el=LPel(sd);countLP(sd,prev.lp[sd],s.lp[sd]);float(el,"-"+ev.amt,"--bad",ev.amt>=2000?56:44);
       if(el){const p=ctr(el);burst(p.x,p.y,css("--bad"),Math.min(90,20+ev.amt/40),8)}
       shake(Math.min(20,4+ev.amt/150));if(sd===my)flash(css("--bad"),Math.min(.5,.15+ev.amt/8000));await sleep(800);break}
-    case "ability":{render(s);const el=Z(`${sd}m${ev.slot}`);if(el){const p=ctr(el);ring(p.x,p.y,css("--gold"),6,6)}await banner("出たとき",card(s,ev.id).n+"\n"+card(s,ev.id).od,"--gold",650);break}
+    case "ability":{render(s);const el=Z(`${sd}m${ev.slot}`);if(el){const p=ctr(el);ring(p.x,p.y,css("--gold"),6,6);burst(p.x,p.y,css("--gold"),30,6);float(el,"出たとき","--gold",22);el.animate([{filter:"brightness(1)"},{filter:"brightness(1.9)"},{filter:"brightness(1)"}],{duration:RM?1:700})}await sleep(900);break}
     case "shield":{render(prev);await shieldBreakFx(sd,ev.left);render(s);break}
     case "strigger":{render(s);await sTriggerFx(card(s,ev.id),sd);break}
     case "shieldadd":{render(s);const el=SHel(sd);if(el){const p=ctr(el);ring(p.x,p.y,css("--water"),6,6)}await banner("盾が増えた",`${NM(sd)}の盾 +${ev.n}`,"--water",550);break}
